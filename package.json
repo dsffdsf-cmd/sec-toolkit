@@ -21,7 +21,8 @@
     "dist:win": "npm run build && electron-builder --win",
     "dist:linux": "npm run build && electron-builder --linux",
     "dist:mac": "npm run build && electron-builder --mac",
-    "dist:all": "npm run build && electron-builder --win --linux"
+    "dist:all": "npm run build && electron-builder --win --linux",
+    "browser:install": "npx puppeteer browsers install chrome"
   },
   "license": "MIT",
   "devDependencies": {

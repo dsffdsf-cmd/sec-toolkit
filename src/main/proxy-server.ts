@@ -1,6 +1,5 @@
 import { Browser, Page, CDPSession } from 'puppeteer';
-import puppeteer from 'puppeteer';
-import { getPuppeteerCacheDir, getPlatformLaunchArgs } from './browser-launcher';
+import { getPuppeteerCacheDir, launchBrowser } from './browser-launcher';
 import { RequestStore } from '../shared/request-store';
 import {
   validateUrl,
@@ -644,13 +643,9 @@ export class ProxyServer {
     // Use app userData for Chromium cache (app is ready when user clicks Launch)
     process.env.PUPPETEER_CACHE_DIR = getPuppeteerCacheDir();
 
-    this.browser = await puppeteer.launch({
+    this.browser = await launchBrowser({
       headless: false,
-      defaultViewport: {
-        width: 1920,
-        height: 1080,
-      },
-      args: getPlatformLaunchArgs(),
+      defaultViewport: { width: 1920, height: 1080 },
     });
 
     // Set up interception for all existing and new pages

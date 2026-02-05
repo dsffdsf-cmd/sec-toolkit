@@ -103,7 +103,7 @@ CleanTraffic supports native installers for **Windows**, **Linux**, and **macOS*
 
 ### Browser (Chromium)
 
-When you click **Launch** to capture traffic, CleanTraffic uses Puppeteer to run Chromium. On first launch, Chromium is downloaded automatically (~150MB) and cached in your app data. This works on all platforms (Windows, Linux, macOS). No manual browser installation is required.
+When you click **Launch** to capture traffic, CleanTraffic uses Puppeteer to run Chromium. On first launch, Chromium is downloaded automatically (~150MB) and cached in your app data. If that fails (e.g. macOS firewall prompts), it falls back to system Chrome/Chromium. Works on Windows, Linux, and macOS (Intel & Apple Silicon). See [docs/BROWSER.md](docs/BROWSER.md) for details.
 
 ## Project Structure
 
