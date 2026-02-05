@@ -1,0 +1,194 @@
+{
+  "name": "sec-toolkit",
+  "productName": "CleanTraffic",
+  "version": "1.0.0",
+  "description": "Powerful HTTP testing toolkit similar to Burp Suite and HTTP Toolkit",
+  "main": "dist/main/main.js",
+  "author": "",
+  "scripts": {
+    "prebuild": "node scripts/copy-html.js",
+    "validate:rules": "node scripts/validate-rules.js",
+    "build": "npm run validate:rules && tsc && node ./node_modules/webpack/bin/webpack.js",
+    "build:main": "tsc",
+    "build:renderer": "node ./node_modules/webpack/bin/webpack.js",
+    "start": "npm run build && npx electron .",
+    "dev": "concurrently \"npm run build:main -- --watch\" \"npm run build:renderer -- --watch\" \"wait-on dist/main/main.js && npx electron .\"",
+    "lint": "eslint src --ext .ts,.tsx",
+    "semgrep:validate": "semgrep --validate --config rules/javascript-security.yml",
+    "semgrep:scan": "semgrep --config rules/javascript-security.yml",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:all": "npm run build && electron-builder --win --linux"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "concurrently": "^8.2.2",
+    "css-loader": "^6.8.1",
+    "electron": "^27.0.0",
+    "electron-builder": "^26.4.0",
+    "eslint": "^8.56.0",
+    "html-webpack-plugin": "^5.5.3",
+    "monaco-editor-webpack-plugin": "^7.1.1",
+    "style-loader": "^3.3.3",
+    "ts-loader": "^9.5.1",
+    "wait-on": "^7.2.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "@httptoolkit/httpolyglot": "^1.0.0",
+    "@monaco-editor/react": "^4.7.0",
+    "axios": "^1.6.2",
+    "brotli": "^1.3.3",
+    "cheerio": "^1.0.0-rc.12",
+    "ethers": "^6.16.0",
+    "monaco-editor": "^0.55.1",
+    "prettier": "^3.7.4",
+    "puppeteer": "^21.5.0",
+    "puppeteer-core": "^21.5.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "selfsigned": "^2.1.1",
+    "semgrep": "^0.0.1",
+    "source-map": "^0.7.6",
+    "typescript": "^5.3.3",
+    "zod": "^3.23.8"
+  },
+  "optionalDependencies": {
+    "@semgrep/semgrep-core": "^1.45.0"
+  },
+  "build": {
+    "appId": "io.cleantraffic.app",
+    "productName": "CleanTraffic",
+    "copyright": "Copyright © 2024-2026 CleanTraffic",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "rules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "rules",
+        "to": "rules",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "asar": true,
+    "compression": "maximum",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "CleanTraffic"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "rpm",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icons",
+      "category": "Development;Security",
+      "maintainer": "CleanTraffic Team",
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+      "synopsis": "HTTP Security Testing Toolkit",
+      "description": "Powerful HTTP testing toolkit for security professionals. Features include proxy interception, vulnerability scanning, request repeater, and Web3 security tools."
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "category": "public.app-category.developer-tools",
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "appImage": {
+      "artifactName": "${productName}-${version}.${ext}"
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libuuid1",
+        "libsecret-1-0"
+      ]
+    },
+    "rpm": {
+      "depends": [
+        "gtk3",
+        "libnotify",
+        "nss",
+        "libXScrnSaver",
+        "libXtst",
+        "xdg-utils",
+        "at-spi2-core",
+        "libuuid",
+        "libsecret"
+      ]
+    },
+    "publish": null
+  }
+}

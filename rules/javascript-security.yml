@@ -1,0 +1,1664 @@
+rules:
+
+###############################################################################
+# ============================= CLIENT-SIDE (BROWSER) =========================
+###############################################################################
+
+- id: client-dom-xss
+  message: User-controlled data reaches dangerous DOM sink (XSS)
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: event.target.value
+    - pattern: location.search
+    - pattern: location.hash
+    - pattern: document.cookie
+    - pattern: window.name
+  pattern-sinks:
+    - pattern: $EL.innerHTML = $DATA
+    - pattern: $EL.outerHTML = $DATA
+    - pattern: $EL.insertAdjacentHTML($POS, $DATA)
+    - pattern: document.write($DATA)
+
+- id: dom-xss-advanced
+  message: >
+    CRITICAL: DOM XSS – user-controlled data reaches an executable DOM sink
+    without proper HTML sanitization.
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-sources:
+    # ===== Browser Sources =====
+    - pattern: location.search
+    - pattern: location.hash
+    - pattern: location.href
+    - pattern: window.location.$PROP
+    - pattern: document.URL
+    - pattern: document.documentURI
+    # URLSearchParams / searchParams helpers (real-world)
+    - pattern: new URLSearchParams($PARAMS).get($KEY)
+    - pattern: new URLSearchParams($PARAMS).set($KEY, $VAL)
+    - pattern: new URLSearchParams($PARAMS).append($KEY, $VAL)
+    - pattern: new URLSearchParams($PARAMS).delete($KEY)
+    - pattern: $U.searchParams.get($KEY)
+    - pattern: $U.searchParams.set($KEY, $VAL)
+    - pattern: $U.searchParams.append($KEY, $VAL)
+    - pattern: $U.searchParams.delete($KEY)
+    - pattern: new URL($URL).searchParams.get($KEY)
+    - pattern: new URL($URL).searchParams.set($KEY, $VAL)
+    - pattern: new URL($URL).searchParams.append($KEY, $VAL)
+    - pattern: new URL($URL).searchParams.delete($KEY)
+    - pattern: event.data
+    - pattern: window.name
+    - pattern: document.referrer
+    - pattern: localStorage.getItem($KEY)
+    - pattern: sessionStorage.getItem($KEY)
+    - pattern: indexedDB.open($DBNAME)
+    # ===== Server-Side Sources =====
+    - pattern: req.body.$X
+    - pattern: req.query.$X
+    - pattern: req.params.$X
+    - pattern: ctx.request.body
+    - pattern: ctx.query
+    - pattern: request.body
+    - pattern: request.query
+    - pattern: request.params
+    # ===== NestJS =====
+    - pattern: "@Body() $X"
+    - pattern: "@Query() $X"
+    - pattern: "@Param() $X"
+    - pattern: "@Headers() $X"
+    # ===== GraphQL =====
+    - pattern: args.$X
+    - pattern: context.req.body
+    - pattern: variables.$X
+    # ===== Next.js =====
+    - pattern: context.query
+    - pattern: context.params
+    - pattern: req.nextUrl.searchParams.get($KEY)
+  pattern-sinks:
+    # ===== Vanilla DOM =====
+    - pattern: document.write($DATA)
+    - pattern: document.writeln($DATA)
+    - pattern: $EL.innerHTML = $DATA
+    - pattern: $EL.outerHTML = $DATA
+    - pattern: $EL.insertAdjacentHTML($POS, $DATA)
+    # ===== React =====
+    - pattern-either:
+        - pattern: |
+            <$X dangerouslySetInnerHTML={{ __html: $DATA }} />
+        - pattern: |
+            <$X dangerouslySetInnerHTML={{__html: $DATA}} />
+        - pattern: |
+            <$X dangerouslySetInnerHTML={{ __html: $DATA }}></$X>
+        - pattern: |
+            <$X dangerouslySetInnerHTML={{__html: $DATA}}></$X>
+    # ===== Vue =====
+    - pattern: this.$el.innerHTML = $DATA
+    # ===== Angular =====
+    - pattern: bypassSecurityTrustHtml($DATA)
+    - pattern: ElementRef.nativeElement.innerHTML = $DATA
+    # ===== jQuery =====
+    - pattern: $($SELECTOR).html($DATA)
+    - pattern: $($SELECTOR).append($DATA)
+    - pattern: $($SELECTOR).prepend($DATA)
+    # ===== JS Execution =====
+    - pattern: eval($CODE)
+    - pattern: Function($CODE)
+    - pattern: setTimeout($CODE, $DELAY)
+    - pattern: setInterval($CODE, $DELAY)
+  pattern-sanitizers:
+    # HTML SAFE
+    - pattern: DOMPurify.sanitize($DATA)
+    - pattern: sanitizeHtml($DATA)
+    - pattern: $sce.trustAsHtml($DATA)
+    - pattern: _.escape($DATA)
+    - pattern: escapeHtml($DATA)
+    - pattern: $EL.textContent = $DATA
+    - pattern: $EL.innerText = $DATA
+  metadata:
+    category: security
+    cwe: "CWE-79"
+    owasp: "A03:2021"
+    frameworks:
+      - react
+      - vue
+      - angular
+      - jquery
+    confidence: "very-high"
+
+- id: client-template-literal-xss
+  message: User input embedded into HTML template literal
+  severity: WARNING
+  languages: [javascript, typescript]
+  patterns:
+    - pattern: |
+        $EL.innerHTML = `...${$INPUT}...`
+
+- id: client-eval-abuse
+  message: "CRITICAL: Dangerous dynamic code execution in browser context"
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: eval($X)
+        - pattern: new Function($X)
+        - pattern: setTimeout($X, ...)
+        - pattern: setInterval($X, ...)
+    - metavariable-pattern:
+        metavariable: $X
+        patterns:
+          - pattern-either:
+              - pattern: location.$ANY
+              - pattern: document.$ANY
+              - pattern: window.$ANY
+              - pattern: $REQ.$ANY
+              - pattern: $INPUT
+
+- id: client-localstorage-sensitive
+  message: Sensitive data stored in localStorage (XSS exfiltration risk)
+  severity: WARNING
+  languages: [javascript, typescript]
+  pattern-either:
+    - pattern: localStorage.setItem("token", $VAL)
+    - pattern: localStorage.setItem("access_token", $VAL)
+    - pattern: localStorage.setItem("refresh_token", $VAL)
+    - pattern: localStorage.setItem("password", $VAL)
+    - pattern: localStorage.setItem("secret", $VAL)
+
+- id: client-postmessage-origin-missing
+  message: postMessage used without origin validation
+  severity: WARNING
+  languages: [javascript, typescript]
+  patterns:
+    - pattern: window.addEventListener("message", $HANDLER)
+
+- id: client-insecure-random
+  message: Math.random() used for security-sensitive operation
+  severity: INFO
+  languages: [javascript, typescript]
+  pattern: Math.random()
+
+# -----------------------------------------------------------------------------
+# DOM XSS 2026 — taint-based, browser sources → DOM/exec sinks. Propagators.
+# -----------------------------------------------------------------------------
+- id: dom-xss-2026
+  message: "DOM XSS: user-controlled data (location, URLSearchParams, event, storage) reaches HTML or execution sink. CWE-79."
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-propagators:
+    - pattern: $LHS = $RHS
+      from: $RHS
+      to: $LHS
+    - pattern: $LHS = $A + $B
+      from: $A
+      to: $LHS
+    - pattern: $LHS = $A + $B
+      from: $B
+      to: $LHS
+  pattern-sources:
+    - pattern: location.search
+    - pattern: location.hash
+    - pattern: location.href
+    - pattern: location?.search
+    - pattern: location?.hash
+    - pattern: window.location.search
+    - pattern: window.location.hash
+    - pattern: window.location.href
+    - pattern: document.URL
+    - pattern: document.referrer
+    - pattern: window.name
+    - pattern: event.data
+    - pattern: event.target.value
+    - pattern: localStorage.getItem($K)
+    - pattern: sessionStorage.getItem($K)
+    - pattern: new URLSearchParams($X).get($K)
+    - pattern: new URL($X).searchParams.get($K)
+    - pattern: $U.searchParams.get($K)
+  pattern-sinks:
+    - pattern: $EL.innerHTML = $DATA
+    - pattern: $EL.outerHTML = $DATA
+    - pattern: $EL.insertAdjacentHTML($POS, $DATA)
+    - pattern: document.write($DATA)
+    - pattern: document.writeln($DATA)
+    - pattern: $($SEL).html($DATA)
+    - pattern: $($SEL).append($DATA)
+    - pattern: $($SEL).prepend($DATA)
+    - pattern: $EL.setAttribute("href", $DATA)
+    - pattern: $EL.setAttribute("src", $DATA)
+    - pattern: $EL.setAttribute('href', $DATA)
+    - pattern: $EL.setAttribute('src', $DATA)
+  pattern-sanitizers:
+    - pattern: DOMPurify.sanitize($X)
+    - pattern: sanitizeHtml($X)
+    - pattern: $EL.textContent = $X
+    - pattern: $EL.innerText = $X
+    - pattern: document.createTextNode($X)
+    - pattern: escapeHtml($X)
+    - pattern: _.escape($X)
+  metadata:
+    category: security
+    cwe: "CWE-79"
+    owasp: "A03:2021"
+    rule_version: "2026.2"
+    confidence: "very-high"
+
+# -----------------------------------------------------------------------------
+# DOM XSS 2026 Advanced — extra sources (baseURI, performance, clipboard, cookie,
+# FormData, history.state) and sinks (parseHTML, createContextualFragment,
+# createHTMLDocument, execCommand insertHTML, setHTML). Reduces false positives.
+# -----------------------------------------------------------------------------
+- id: dom-xss-2026-advanced
+  message: "DOM XSS (advanced): user-controlled data reaches HTML/exec sink. Sources: baseURI, performance, clipboard, cookie, FormData, history.state. CWE-79."
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-sources:
+    - pattern: location.search
+    - pattern: location.hash
+    - pattern: location.href
+    - pattern: document.URL
+    - pattern: document.referrer
+    - pattern: document.baseURI
+    - pattern: document.cookie
+    - pattern: window.name
+    - pattern: event.data
+    - pattern: event.target.value
+    - pattern: event.clipboardData.getData($T)
+    - pattern: localStorage.getItem($K)
+    - pattern: sessionStorage.getItem($K)
+    - pattern: history.state
+    - pattern: new URLSearchParams($X).get($K)
+    - pattern: new URL($X).searchParams.get($K)
+    - pattern: $U.searchParams.get($K)
+    - pattern: performance.getEntriesByType("navigation")
+    - pattern: new FormData($F).get($K)
+  pattern-sinks:
+    - pattern: $EL.innerHTML = $DATA
+    - pattern: $EL.outerHTML = $DATA
+    - pattern: $EL.insertAdjacentHTML($POS, $DATA)
+    - pattern: document.write($DATA)
+    - pattern: document.writeln($DATA)
+    - pattern: $($SEL).html($DATA)
+    - pattern: $($SEL).append($DATA)
+    - pattern: $($SEL).prepend($DATA)
+    - pattern: $($SEL).parseHTML($DATA)
+    - pattern: $R.createContextualFragment($DATA)
+    - pattern: document.implementation.createHTMLDocument($DATA)
+    - pattern: $EL.setHTML($DATA)
+    - pattern: $EL.setAttribute("href", $DATA)
+    - pattern: $EL.setAttribute("src", $DATA)
+  pattern-sanitizers:
+    - pattern: DOMPurify.sanitize($X)
+    - pattern: sanitizeHtml($X)
+    - pattern: $EL.textContent = $X
+    - pattern: $EL.innerText = $X
+    - pattern: document.createTextNode($X)
+    - pattern: escapeHtml($X)
+    - pattern: _.escape($X)
+  metadata:
+    category: security
+    cwe: "CWE-79"
+    owasp: "A03:2021"
+    rule_version: "2026.2"
+    confidence: "high"
+
+# Exact same-expression flows (AST patterns; no taint). High signal.
+- id: dom-xss-innerHTML-location-exact
+  message: "DOM XSS: innerHTML = location.search|hash|href. User input written as HTML."
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-either:
+    - pattern: $EL.innerHTML = location.search
+    - pattern: $EL.innerHTML = location.hash
+    - pattern: $EL.innerHTML = location.href
+    - pattern: $EL.innerHTML = window.location.search
+    - pattern: $EL.innerHTML = window.location.hash
+  metadata:
+    cwe: "CWE-79"
+    confidence: "very-high"
+
+- id: dom-xss-innerHTML-searchParams-exact
+  message: "DOM XSS: innerHTML = URLSearchParams/searchParams.get(...). User input from URL written as HTML."
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-either:
+    - pattern: $EL.innerHTML = new URLSearchParams($X).get($K)
+    - pattern: $EL.innerHTML = $U.searchParams.get($K)
+    - pattern: $EL.innerHTML = new URL($URL).searchParams.get($K)
+  metadata:
+    cwe: "CWE-79"
+    confidence: "very-high"
+
+- id: dom-xss-document-write-location-exact
+  message: "DOM XSS: document.write/writeln(location). User input executed as HTML."
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-either:
+    - pattern: document.write(location.search)
+    - pattern: document.write(location.hash)
+    - pattern: document.writeln(location.search)
+    - pattern: document.writeln(location.hash)
+  metadata:
+    cwe: "CWE-79"
+    confidence: "very-high"
+
+# -----------------------------------------------------------------------------
+# 2026-era: Trusted Types bypass, Sanitizer API, BroadcastChannel, dynamic import
+# -----------------------------------------------------------------------------
+- id: dom-xss-trusted-types-bypass
+  message: "DOM XSS: Trusted Types bypass – createHTML/createScript with user input. CWE-79."
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: location.search
+    - pattern: location.hash
+    - pattern: location.href
+    - pattern: event.data
+    - pattern: event.target.value
+    - pattern: new URLSearchParams($X).get($K)
+    - pattern: $U.searchParams.get($K)
+    - pattern: localStorage.getItem($K)
+    - pattern: sessionStorage.getItem($K)
+  pattern-sinks:
+    - pattern: $POLICY.createHTML($DATA)
+    - pattern: $POLICY.createScript($DATA)
+    - pattern: $POLICY.createScriptURL($DATA)
+  metadata:
+    category: security
+    cwe: "CWE-79"
+    owasp: "A03:2021"
+    confidence: "high"
+
+- id: dom-xss-sanitizer-setHTML
+  message: "DOM XSS: Element.setHTML() (Sanitizer API) with user-controlled input. Verify Sanitizer config. CWE-79."
+  severity: WARNING
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: location.search
+    - pattern: location.hash
+    - pattern: event.data
+    - pattern: event.target.value
+    - pattern: new URLSearchParams($X).get($K)
+    - pattern: $U.searchParams.get($K)
+  pattern-sinks:
+    - pattern: $EL.setHTML($DATA, ...)
+    - pattern: $EL.setHTML($DATA)
+  metadata:
+    category: security
+    cwe: "CWE-79"
+    confidence: "medium"
+
+- id: client-broadcast-channel-message
+  message: "BroadcastChannel message listener without origin validation. Validate event.origin when using event.data. CWE-79."
+  severity: WARNING
+  languages: [javascript, typescript]
+  pattern-either:
+    - pattern: $BC.onmessage = $H
+    - pattern: $BC.addEventListener("message", $H)
+  metadata:
+    category: security
+    cwe: "CWE-79"
+    confidence: "medium"
+
+- id: ssrf-dynamic-import
+  message: "Module/import injection: dynamic import() with user-controlled specifier. CWE-829."
+  severity: WARNING
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: location.search
+    - pattern: location.hash
+    - pattern: $REQ.query.$X
+    - pattern: $REQ.body.$X
+    - pattern: event.data
+  pattern-sinks:
+    - pattern: import($SPEC)
+    - pattern: require($SPEC)
+  metadata:
+    category: security
+    cwe: "CWE-829"
+    confidence: "medium"
+
+###############################################################################
+# ============================= SERVER-SIDE (NODE / API) =======================
+###############################################################################
+
+- id: server-xss-reflection
+  message: Reflected XSS via response output
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: $REQ.query.$ANY
+    - pattern: $REQ.body.$ANY
+    - pattern: $REQ.params.$ANY
+    - pattern: $REQ.headers.$ANY
+  pattern-sinks:
+    - pattern: res.send($DATA)
+    - pattern: res.write($DATA)
+    - pattern: res.end($DATA)
+    - pattern: res.json($DATA)
+
+- id: server-eval-rce
+  message: User input reaches eval() or Function() (RCE risk)
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: $REQ.body.$ANY
+    - pattern: $REQ.query.$ANY
+  pattern-sinks:
+    - pattern: eval($CODE)
+    - pattern: new Function($CODE)
+
+- id: server-command-injection
+  message: Possible OS command injection
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: $REQ.body.$ANY
+    - pattern: $REQ.query.$ANY
+    - pattern: $REQ.params.$ANY
+  pattern-sinks:
+    - pattern: require("child_process").exec($CMD)
+    - pattern: require("child_process").execSync($CMD)
+    - pattern: require("child_process").spawn($CMD, ...)
+
+- id: command-injection-advanced
+  message: >
+    CRITICAL: Command injection – shell execution with user input.
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-sources:
+    - pattern: req.body.$X
+    - pattern: req.query.$X
+    - pattern: req.params.$X
+    - pattern: ctx.request.body.$X
+    - pattern: request.body.$X
+    - pattern: request.query.$X
+    - pattern: args.cmd
+    - pattern: args.command
+  pattern-sinks:
+    - pattern: child_process.exec($CMD)
+    - pattern: child_process.execSync($CMD)
+    - pattern: child_process.spawn($CMD, ...)
+    - pattern: child_process.spawnSync($CMD, ...)
+    - pattern: child_process.execFile($CMD, ...)
+    - pattern: Bun.spawn($CMD, ...)
+    - pattern: Deno.run($CMD)
+    - pattern: exec($CMD)
+    - pattern: execSync($CMD)
+    - pattern: spawn($CMD, ...)
+  pattern-sanitizers:
+    - pattern: path.basename($PATH)
+    - pattern: path.resolve($PATH)
+    - pattern: escapeShellArg($ARG)
+    - pattern: shellEscape($ARG)
+  metadata:
+    category: security
+    cwe: "CWE-78"
+    confidence: very-high
+
+- id: server-path-traversal
+  message: User input used in filesystem path
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: $REQ.params.$ANY
+    - pattern: $REQ.query.$ANY
+  pattern-sinks:
+    - pattern: fs.readFile($PATH, ...)
+    - pattern: fs.readFileSync($PATH)
+    - pattern: fs.writeFile($PATH, ...)
+    - pattern: fs.createReadStream($PATH)
+
+- id: server-sql-injection
+  message: SQL query built using user input
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: $REQ.body.$ANY
+    - pattern: $REQ.query.$ANY
+  pattern-sinks:
+    - pattern: $DB.query($SQL)
+    - pattern: $DB.execute($SQL)
+    - pattern: $DB.raw($SQL)
+
+- id: sql-injection-string-concat
+  message: >
+    CRITICAL: SQL Injection via string concatenation in database query.
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: req.body.$X
+    - pattern: req.query.$X
+    - pattern: req.params.$X
+    - pattern: request.body.$X
+    - pattern: request.query.$X
+  pattern-sinks:
+    - pattern: db.query("..." + ...)
+    - pattern: connection.query(`...${...}`)
+    - pattern: $DB.query($SQL + ...)
+    - pattern: $DB.execute($SQL + ...)
+    - pattern: $DB.raw($SQL + ...)
+    - pattern: sequelize.query($SQL + ...)
+    - pattern: knex.raw($SQL + ...)
+  pattern-sanitizers:
+    - pattern: escape($STR)
+    - pattern: mysql.escape($STR)
+    - pattern: pg.escape($STR)
+  metadata:
+    category: security
+    cwe: "CWE-89"
+    confidence: medium
+
+- id: server-nosql-injection
+  message: NoSQL injection via untrusted query object
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: $REQ.body
+    - pattern: $REQ.query
+  pattern-sinks:
+    - pattern: $MODEL.find($QUERY)
+    - pattern: $MODEL.findOne($QUERY)
+    - pattern: $MODEL.update($QUERY, ...)
+
+# -----------------------------------------------------------------------------
+# LDAP injection (taint)
+# -----------------------------------------------------------------------------
+- id: server-ldap-injection
+  message: "CRITICAL: LDAP injection – user input used in LDAP search/bind. CWE-90."
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-sources:
+    - pattern: req.body.$X
+    - pattern: req.query.$X
+    - pattern: req.params.$X
+    - pattern: request.body.$X
+    - pattern: request.query.$X
+  pattern-sinks:
+    - pattern: ldap.search($BASE, $QUERY, ...)
+    - pattern: ldap.bind($DN, ...)
+    - pattern: client.search($BASE, $QUERY, ...)
+  pattern-sanitizers:
+    - pattern: ldap.escape($STR)
+    - pattern: escape($STR)
+  metadata:
+    category: security
+    cwe: "CWE-90"
+    confidence: high
+
+# -----------------------------------------------------------------------------
+# Open redirect (location.href / window.location = user input)
+# -----------------------------------------------------------------------------
+- id: open-redirect-location-href
+  message: "Open redirect: user-controlled URL assigned to location.href or window.location. CWE-601."
+  severity: WARNING
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-sources:
+    - pattern: req.query.$X
+    - pattern: req.body.$X
+    - pattern: req.params.$X
+    - pattern: request.query.$X
+    - pattern: request.body.$X
+    - pattern: location.search
+    - pattern: new URLSearchParams($X).get($K)
+    - pattern: $U.searchParams.get($K)
+  pattern-sinks:
+    - pattern: location.href = $URL
+    - pattern: location = $URL
+    - pattern: window.location.href = $URL
+    - pattern: window.location = $URL
+    - pattern: location.assign($URL)
+    - pattern: location.replace($URL)
+  pattern-sanitizers:
+    - pattern: new URL($URL)
+    - pattern: allowlist.includes($URL)
+    - pattern: whitelist.includes($URL)
+  metadata:
+    category: security
+    cwe: "CWE-601"
+    confidence: high
+
+# -----------------------------------------------------------------------------
+# Path traversal (path.join / fs with user input)
+# -----------------------------------------------------------------------------
+- id: path-traversal-join
+  message: "Path traversal: user input used in path.join or fs path. CWE-22."
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-sources:
+    - pattern: req.params.$X
+    - pattern: req.query.$X
+    - pattern: req.body.$X
+    - pattern: request.params.$X
+    - pattern: request.query.$X
+  pattern-sinks:
+    - pattern: path.join($BASE, $USER)
+    - pattern: path.resolve($BASE, $USER)
+    - pattern: fs.readFile($PATH, ...)
+    - pattern: fs.readFileSync($PATH)
+    - pattern: fs.createReadStream($PATH)
+    - pattern: fs.writeFile($PATH, ...)
+    - pattern: require("fs").readFile($PATH, ...)
+    - pattern: require("fs").readFileSync($PATH)
+  pattern-sanitizers:
+    - pattern: path.basename($PATH)
+    - pattern: path.normalize($PATH)
+  metadata:
+    category: security
+    cwe: "CWE-22"
+    confidence: high
+
+# -----------------------------------------------------------------------------
+# SQL injection – ORM raw queries (Prisma, TypeORM, Drizzle)
+# -----------------------------------------------------------------------------
+- id: sql-injection-orm-raw
+  message: "CRITICAL: SQL injection via raw query (Prisma/TypeORM/Drizzle) with user input. CWE-89."
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-sources:
+    - pattern: req.body.$X
+    - pattern: req.query.$X
+    - pattern: req.params.$X
+    - pattern: request.body.$X
+    - pattern: request.query.$X
+  pattern-sinks:
+    - pattern: $PRISMA.$queryRaw($SQL)
+    - pattern: $PRISMA.$queryRawUnsafe($SQL)
+    - pattern: $PRISMA.$executeRaw($SQL)
+    - pattern: $ORM.query($SQL + ...)
+    - pattern: $ORM.query(`...${...}...`)
+    - pattern: $QB.where(`...${...}...`)
+    - pattern: $QB.andWhere(`...${...}...`)
+    - pattern: sql`...${...}...`
+  pattern-sanitizers:
+    - pattern: $PRISMA.$queryRaw`...`
+    - pattern: escape($STR)
+    - pattern: mysql.escape($STR)
+  metadata:
+    category: security
+    cwe: "CWE-89"
+    confidence: high
+
+# -----------------------------------------------------------------------------
+# ReDoS – dangerous regex (user-controlled or nested quantifiers)
+# -----------------------------------------------------------------------------
+- id: redos-user-input-regex
+  message: "ReDoS: User-controlled input used as regex pattern. CWE-1333."
+  severity: WARNING
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: req.body.$X
+    - pattern: req.query.$X
+    - pattern: req.params.$X
+    - pattern: request.query.$X
+  pattern-sinks:
+    - pattern: new RegExp($PATTERN)
+    - pattern: new RegExp($PATTERN, $FLAGS)
+    - pattern: $STR.match($PATTERN)
+    - pattern: $STR.replace($PATTERN, ...)
+    - pattern: $STR.split($PATTERN)
+  metadata:
+    category: security
+    cwe: "CWE-1333"
+    confidence: high
+
+# -----------------------------------------------------------------------------
+# Server-Side Template Injection (SSTI) – EJS, Handlebars, Pug, etc.
+# -----------------------------------------------------------------------------
+- id: ssti-ejs-render
+  message: "CRITICAL: Server-Side Template Injection (SSTI) – user input passed to EJS render. CWE-1336."
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-sources:
+    - pattern: req.body.$X
+    - pattern: req.query.$X
+    - pattern: req.params.$X
+    - pattern: request.body.$X
+    - pattern: request.query.$X
+  pattern-sinks:
+    - pattern: ejs.render($TEMPLATE, ...)
+    - pattern: ejs.renderFile($TEMPLATE, ...)
+    - pattern: require("ejs").render($TEMPLATE, ...)
+  metadata:
+    category: security
+    cwe: "CWE-1336"
+    confidence: high
+
+- id: ssti-handlebars-compile
+  message: "CRITICAL: Server-Side Template Injection (SSTI) – user input passed to Handlebars compile. CWE-1336."
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: req.body.$X
+    - pattern: req.query.$X
+    - pattern: request.body.$X
+    - pattern: request.query.$X
+  pattern-sinks:
+    - pattern: Handlebars.compile($TEMPLATE)
+    - pattern: handlebars.compile($TEMPLATE)
+    - pattern: require("handlebars").compile($TEMPLATE)
+  metadata:
+    category: security
+    cwe: "CWE-1336"
+    confidence: high
+
+- id: ssti-pug-render
+  message: "CRITICAL: Server-Side Template Injection (SSTI) – user input passed to Pug render. CWE-1336."
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: req.body.$X
+    - pattern: req.query.$X
+    - pattern: request.body.$X
+    - pattern: request.query.$X
+  pattern-sinks:
+    - pattern: pug.render($TEMPLATE, ...)
+    - pattern: pug.renderFile($TEMPLATE, ...)
+    - pattern: require("pug").render($TEMPLATE, ...)
+  metadata:
+    category: security
+    cwe: "CWE-1336"
+    confidence: high
+
+- id: ssti-mustache-render
+  message: "CRITICAL: Server-Side Template Injection (SSTI) – user input passed to Mustache render. CWE-1336."
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: req.body.$X
+    - pattern: req.query.$X
+    - pattern: request.body.$X
+    - pattern: request.query.$X
+  pattern-sinks:
+    - pattern: Mustache.render($TEMPLATE, ...)
+    - pattern: mustache.render($TEMPLATE, ...)
+  metadata:
+    category: security
+    cwe: "CWE-1336"
+    confidence: high
+
+- id: server-open-redirect
+  message: Open redirect using user-controlled input
+  severity: WARNING
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: $REQ.query.$ANY
+  pattern-sinks:
+    - pattern: res.redirect($URL)
+
+- id: server-deserialization
+  message: Unsafe JSON or object deserialization
+  severity: WARNING
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: JSON.parse($INPUT)
+        - pattern: eval($INPUT)
+
+- id: insecure-deserialization-eval
+  message: >
+    CRITICAL: Insecure deserialization via eval() with user input.
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: req.body.$X
+    - pattern: req.query.$X
+    - pattern: req.params.$X
+    - pattern: request.body.$X
+    - pattern: request.query.$X
+  pattern-sinks:
+    - pattern: eval($CODE)
+    - pattern: Function($CODE)
+    - pattern: JSON.parse($DATA)
+    - pattern: vm.runInContext($CODE, ...)
+    - pattern: vm.runInNewContext($CODE, ...)
+  metadata:
+    category: security
+    cwe: "CWE-502"
+    confidence: high
+
+###############################################################################
+# ============================= SECRETS & CONFIG ===============================
+###############################################################################
+
+- id: hardcoded-api-key
+  message: "CRITICAL: Hardcoded API key detected - sensitive credentials exposed"
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: |
+            $KEY = "$SECRET"
+        - pattern: |
+            $KEY: "$SECRET"
+        - pattern: |
+            $KEY = '$SECRET'
+        - pattern: |
+            $KEY: '$SECRET'
+    - metavariable-regex:
+        metavariable: $KEY
+        regex: (?i)(api[_-]?key|apikey|api[_-]?token|access[_-]?token|auth[_-]?token)
+    - metavariable-regex:
+        metavariable: $SECRET
+        regex: '[A-Za-z0-9+/=_-]{20,}'
+
+- id: hardcoded-secret-advanced
+  message: >
+    CRITICAL: Hardcoded secret detected in source code.
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-regex: >
+    (AWS|API|SECRET|TOKEN|KEY)[^"'\n]{0,15}["'][A-Za-z0-9/_+=-]{20,}["']
+  metadata:
+    category: secrets
+    confidence: high
+
+- id: hardcoded-database-credentials
+  message: "CRITICAL: Hardcoded database credentials detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: |
+            $VAR = "$SECRET"
+        - pattern: |
+            $VAR: "$SECRET"
+        - pattern: |
+            $VAR = '$SECRET'
+        - pattern: |
+            $VAR: '$SECRET'
+    - metavariable-regex:
+        metavariable: $VAR
+        regex: (?i)(db[_-]?(password|pass|pwd)|database[_-]?(password|pass|pwd)|mysql[_-]?(password|pass|pwd)|postgres[_-]?(password|pass|pwd)|mongodb[_-]?(password|pass|pwd))
+    - metavariable-regex:
+        metavariable: $SECRET
+        regex: '[A-Za-z0-9+/=_-]{8,}'
+
+- id: hardcoded-aws-credentials
+  message: "CRITICAL: Hardcoded AWS credentials detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: |
+            $VAR = "$SECRET"
+        - pattern: |
+            $VAR: "$SECRET"
+        - pattern: |
+            AWS_ACCESS_KEY_ID = "$SECRET"
+        - pattern: |
+            AWS_SECRET_ACCESS_KEY = "$SECRET"
+    - metavariable-regex:
+        metavariable: $VAR
+        regex: (?i)(aws[_-]?(access[_-]?key|secret[_-]?key|access[_-]?key[_-]?id|secret[_-]?access[_-]?key))
+    - metavariable-regex:
+        metavariable: $SECRET
+        regex: '[A-Za-z0-9+/=_-]{16,}'
+
+- id: hardcoded-google-cloud-credentials
+  message: "CRITICAL: Hardcoded Google Cloud credentials detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: |
+            $VAR = "$SECRET"
+        - pattern: |
+            $VAR: "$SECRET"
+        - pattern: |
+            GOOGLE_APPLICATION_CREDENTIALS = "$SECRET"
+    - metavariable-regex:
+        metavariable: $VAR
+        regex: (?i)(google[_-]?(api[_-]?key|application[_-]?credentials|cloud[_-]?key|service[_-]?account[_-]?key))
+    - metavariable-regex:
+        metavariable: $SECRET
+        regex: '[A-Za-z0-9+/=_-]{20,}'
+
+- id: hardcoded-azure-credentials
+  message: "CRITICAL: Hardcoded Azure credentials detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: |
+            $VAR = "$SECRET"
+        - pattern: |
+            $VAR: "$SECRET"
+    - metavariable-regex:
+        metavariable: $VAR
+        regex: (?i)(azure[_-]?(client[_-]?secret|account[_-]?key|storage[_-]?key|connection[_-]?string))
+    - metavariable-regex:
+        metavariable: $SECRET
+        regex: '[A-Za-z0-9+/=_-]{20,}'
+
+- id: hardcoded-stripe-key
+  message: "CRITICAL: Hardcoded Stripe API key detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: |
+            $VAR = "$SECRET"
+        - pattern: |
+            $VAR: "$SECRET"
+        - pattern: |
+            STRIPE_SECRET_KEY = "$SECRET"
+        - pattern: |
+            STRIPE_API_KEY = "$SECRET"
+    - metavariable-regex:
+        metavariable: $VAR
+        regex: (?i)(stripe[_-]?(secret[_-]?key|api[_-]?key|publishable[_-]?key))
+    - metavariable-regex:
+        metavariable: $SECRET
+        regex: 'sk_[A-Za-z0-9]{24,}|pk_[A-Za-z0-9]{24,}'
+
+- id: hardcoded-jwt
+  message: "CRITICAL: Hardcoded JWT token detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-regex: |
+    eyJ[A-Za-z0-9_-]{20,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{20,}
+
+- id: hardcoded-oauth-token
+  message: "CRITICAL: Hardcoded OAuth token detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: |
+            $VAR = "$SECRET"
+        - pattern: |
+            $VAR: "$SECRET"
+    - metavariable-regex:
+        metavariable: $VAR
+        regex: (?i)(oauth[_-]?(token|secret|access[_-]?token|refresh[_-]?token))
+    - metavariable-regex:
+        metavariable: $SECRET
+        regex: '[A-Za-z0-9+/=_-]{20,}'
+
+- id: hardcoded-private-key
+  message: "CRITICAL: Hardcoded private key detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: |
+            $VAR = "$SECRET"
+        - pattern: |
+            $VAR: "$SECRET"
+        - pattern: |
+            $VAR = `$SECRET`
+    - metavariable-regex:
+        metavariable: $VAR
+        regex: (?i)(private[_-]?key|privkey|rsa[_-]?private[_-]?key|ecdsa[_-]?private[_-]?key)
+    - metavariable-regex:
+        metavariable: $SECRET
+        regex: '-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'
+
+###############################################################################
+# ============================= TOKENS / CLOUD / DB URIS =======================
+###############################################################################
+
+- id: secrets-github-tokens
+  message: "CRITICAL: Hardcoded GitHub token detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-regex: |
+    \bgh(p|o|u|s|r)_[A-Za-z0-9]{30,}\b
+  metadata:
+    category: secrets
+    confidence: high
+
+- id: secrets-gitlab-token
+  message: "CRITICAL: Hardcoded GitLab token detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-regex: |
+    \bglpat-[A-Za-z0-9_-]{20,}\b
+  metadata:
+    category: secrets
+    confidence: high
+
+- id: secrets-slack-tokens
+  message: "CRITICAL: Hardcoded Slack token detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-regex: |
+    \bxox[baprs]-[A-Za-z0-9-]{10,}\b
+  metadata:
+    category: secrets
+    confidence: high
+
+- id: secrets-sendgrid-token
+  message: "CRITICAL: Hardcoded SendGrid API key detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-regex: |
+    \bSG\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b
+  metadata:
+    category: secrets
+    confidence: high
+
+- id: secrets-google-api-key
+  message: "CRITICAL: Hardcoded Google API key detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-regex: |
+    \bAIza[0-9A-Za-z_-]{32,}\b
+  metadata:
+    category: secrets
+    confidence: high
+
+- id: secrets-discord-token
+  message: "CRITICAL: Hardcoded Discord token detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-regex: |
+    \b(mfa\.[A-Za-z0-9_-]{40,}|[A-Za-z0-9_-]{24}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27})\b
+  metadata:
+    category: secrets
+    confidence: medium
+
+- id: secrets-telegram-bot-token
+  message: "CRITICAL: Hardcoded Telegram bot token detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-regex: |
+    \b\d{6,12}:[A-Za-z0-9_-]{30,}\b
+  metadata:
+    category: secrets
+    confidence: medium
+
+- id: secrets-twilio
+  message: "CRITICAL: Hardcoded Twilio credentials detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-either:
+    - pattern-regex: \bAC[0-9a-fA-F]{32}\b
+    - pattern-regex: \bSK[0-9a-fA-F]{32}\b
+  metadata:
+    category: secrets
+    confidence: high
+
+- id: secrets-sentry-dsn
+  message: "CRITICAL: Hardcoded Sentry DSN detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-regex: |
+    https?:\/\/[0-9a-f]{32}@[A-Za-z0-9.-]+\/\d{1,8}
+  metadata:
+    category: secrets
+    confidence: high
+
+- id: secrets-cloudflare-token
+  message: "CRITICAL: Hardcoded Cloudflare API token detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-regex: |
+    \b(cfpt|cfat|cfau)_[A-Za-z0-9]{20,}\b
+  metadata:
+    category: secrets
+    confidence: medium
+
+- id: secrets-db-uri-with-creds
+  message: "CRITICAL: Database URI with embedded credentials detected"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-either:
+    - pattern-regex: \bmongodb(\+srv)?:\/\/[^ \n"'`]+:[^ \n"'`]+@[^ \n"'`]+
+    - pattern-regex: \bpostgres(ql)?:\/\/[^ \n"'`]+:[^ \n"'`]+@[^ \n"'`]+
+    - pattern-regex: \bmysql:\/\/[^ \n"'`]+:[^ \n"'`]+@[^ \n"'`]+
+    - pattern-regex: \bredis(s)?:\/\/[^ \n"'`]+:[^ \n"'`]+@[^ \n"'`]+
+  metadata:
+    category: secrets
+    confidence: high
+
+- id: secrets-basic-auth-in-url
+  message: "CRITICAL: URL contains basic-auth credentials"
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-regex: |
+    https?:\/\/[^\/\s"'`]+:[^\/\s"'`]+@[^\/\s"'`]+
+  metadata:
+    category: secrets
+    confidence: medium
+
+- id: weak-cors
+  message: Overly permissive CORS configuration
+  severity: WARNING
+  languages: [javascript, typescript]
+  patterns:
+    - pattern: |
+        res.setHeader("Access-Control-Allow-Origin", "*")
+
+###############################################################################
+# ============================= AUTH / SESSION =================================
+###############################################################################
+
+- id: jwt-no-verify
+  message: JWT decoded without signature verification
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern: jwt.decode($TOKEN)
+
+- id: insecure-session-cookie
+  message: Session cookie missing secure flags
+  severity: WARNING
+  languages: [javascript, typescript]
+  patterns:
+    - pattern: |
+        res.cookie($NAME, $VAL, { httpOnly: false })
+    - pattern: |
+        res.cookie($NAME, $VAL, { secure: false })
+    - pattern: |
+        res.cookie($NAME, $VAL, { sameSite: "none" })
+
+###############################################################################
+# ============================= GRAPHQL SPECIFIC ==============================
+###############################################################################
+
+- id: graphql-injection
+  message: GraphQL query built with string concatenation (injection risk)
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: $REQ.body.$ANY
+    - pattern: $REQ.query.$ANY
+    - pattern: $REQ.params.$ANY
+  pattern-sinks:
+    - pattern: $GQL.query($QUERY + $USER_INPUT)
+    - pattern: $GQL.mutate($QUERY + $USER_INPUT)
+    - pattern: $QUERY + $USER_INPUT
+    - pattern: $QUERY.concat($USER_INPUT)
+
+- id: graphql-injection-advanced
+  message: >
+    HIGH: GraphQL Injection – user input concatenated into query string.
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-sources:
+    - pattern: req.body.query
+    - pattern: req.body.variables
+    - pattern: variables.$X
+    - pattern: args.$X
+    - pattern: context.req.body.query
+    - pattern: context.req.body.variables
+  pattern-sinks:
+    - pattern: gql($QUERY)
+    - pattern: graphql($SCHEMA, $QUERY)
+    - pattern: client.query($QUERY)
+    - pattern: client.mutate($MUTATION)
+    - pattern: execute($SCHEMA, $QUERY)
+    - pattern: graphql.execute($SCHEMA, $QUERY)
+    - pattern: ApolloClient.query($QUERY)
+    - pattern: ApolloClient.mutate($MUTATION)
+  pattern-sanitizers:
+    - pattern: validateQuery($QUERY)
+    - pattern: sanitizeQuery($QUERY)
+  metadata:
+    category: security
+    cwe: "CWE-89"
+    confidence: high
+
+- id: graphql-introspection-enabled
+  message: GraphQL introspection enabled in production
+  severity: WARNING
+  languages: [javascript, typescript]
+  patterns:
+    - pattern: |
+        introspection: true
+    - pattern: |
+        introspectionEnabled: true
+
+- id: graphql-depth-limit-missing
+  message: GraphQL query depth limit not configured
+  severity: WARNING
+  languages: [javascript, typescript]
+  patterns:
+    - pattern: |
+        new GraphQLServer(...)
+
+- id: graphql-complexity-limit-missing
+  message: GraphQL query complexity limit not configured
+  severity: WARNING
+  languages: [javascript, typescript]
+  patterns:
+    - pattern: |
+        new GraphQLServer(...)
+
+###############################################################################
+# ============================= CRYPTO / HASHING ==============================
+###############################################################################
+
+- id: weak-hash-algorithm
+  message: Weak hashing algorithm used (MD5, SHA1)
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: require("crypto").createHash("md5")
+        - pattern: require("crypto").createHash("sha1")
+        - pattern: crypto.createHash("md5")
+        - pattern: crypto.createHash("sha1")
+
+- id: insecure-random-generation
+  message: Insecure random number generation for security purposes
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern: Math.random()
+
+- id: weak-encryption
+  message: Weak encryption algorithm (DES, RC4)
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: require("crypto").createCipher("des", ...)
+        - pattern: require("crypto").createCipher("rc4", ...)
+        - pattern: crypto.createCipher("des", ...)
+        - pattern: crypto.createCipher("rc4", ...)
+
+###############################################################################
+# ============================= API / NETWORK ==================================
+###############################################################################
+
+- id: ssrf-request
+  message: Server-Side Request Forgery (SSRF) vulnerability
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: $REQ.query.url
+    - pattern: $REQ.body.url
+    - pattern: $REQ.params.url
+    - pattern: $REQ.query.target
+    - pattern: $REQ.body.target
+  pattern-sinks:
+    - pattern: fetch($URL)
+    - pattern: axios.get($URL)
+    - pattern: axios.post($URL, ...)
+    - pattern: require("http").get($URL, ...)
+    - pattern: require("https").get($URL, ...)
+    - pattern: require("request")($URL, ...)
+
+- id: ssrf-advanced
+  message: >
+    CRITICAL: SSRF – user-controlled URL reaches outbound request without
+    allowlist validation.
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-sources:
+    - pattern: req.body.$X
+    - pattern: req.query.$X
+    - pattern: req.params.$X
+    - pattern: ctx.request.body.$X
+    - pattern: ctx.query.$X
+    - pattern: request.body.$X
+    - pattern: request.query.$X
+    - pattern: args.url
+    - pattern: args.target
+    - pattern: variables.url
+  pattern-sinks:
+    - pattern: fetch($URL, ...)
+    - pattern: axios($URL, ...)
+    - pattern: axios.get($URL, ...)
+    - pattern: axios.post($URL, ...)
+    - pattern: axios.put($URL, ...)
+    - pattern: axios.delete($URL, ...)
+    - pattern: request($URL, ...)
+    - pattern: http.request($URL, ...)
+    - pattern: https.request($URL, ...)
+    - pattern: http.get($URL, ...)
+    - pattern: https.get($URL, ...)
+    - pattern: got($URL, ...)
+    - pattern: node-fetch($URL, ...)
+  pattern-sanitizers:
+    - pattern: new URL($URL)
+    - pattern: isInternal($URL)
+    - pattern: isPrivateIP($IP)
+    - pattern: allowlist.includes($URL)
+    - pattern: whitelist.includes($URL)
+    - pattern: $HOSTNAME.endsWith("trusted.com")
+    - pattern: $URL.startsWith("https://api.")
+    - pattern: $URL.startsWith("https://trusted.")
+  metadata:
+    category: security
+    cwe: "CWE-918"
+    cloud: [aws, gcp, azure]
+    confidence: high
+
+- id: insecure-http-request
+  message: HTTP request to external resource (should use HTTPS)
+  severity: WARNING
+  languages: [javascript, typescript]
+  pattern-regex: |
+    (?:fetch|axios|http\.get|https\.get|request)\(["']http://
+
+- id: missing-request-timeout
+  message: HTTP request without timeout configuration
+  severity: WARNING
+  languages: [javascript, typescript]
+  patterns:
+    - pattern: |
+        axios.$METHOD($URL, ...)
+
+###############################################################################
+# ============================= DEPENDENCY / PACKAGE ===========================
+###############################################################################
+
+- id: dangerous-package-import
+  message: Potentially dangerous package imported
+  severity: WARNING
+  languages: [javascript, typescript]
+  patterns:
+    - pattern-either:
+        - pattern: require("vm")
+        - pattern: require("child_process")
+        - pattern: require("fs")
+        - pattern: import $ANY from "vm"
+        - pattern: import $ANY from "child_process"
+        - pattern: import $ANY from "fs"
+
+###############################################################################
+# ============================= LOGGING / DEBUGGING ===========================
+###############################################################################
+
+- id: sensitive-data-logging
+  message: Sensitive data logged to console or file
+  severity: WARNING
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: $REQ.body.password
+    - pattern: $REQ.body.token
+    - pattern: $REQ.headers.authorization
+    - pattern: $REQ.cookies
+  pattern-sinks:
+    - pattern: console.log($DATA)
+    - pattern: console.info($DATA)
+    - pattern: console.error($DATA)
+    - pattern: logger.info($DATA)
+    - pattern: logger.error($DATA)
+
+###############################################################################
+# ============================= VALIDATION / SANITIZATION ======================
+###############################################################################
+
+- id: missing-input-validation
+  message: User input used without validation
+  severity: INFO
+  languages: [javascript, typescript]
+  mode: taint
+  pattern-sources:
+    - pattern: $REQ.body.$ANY
+    - pattern: $REQ.query.$ANY
+    - pattern: $REQ.params.$ANY
+  pattern-sinks:
+    - pattern: $DB.query($SQL)
+    - pattern: eval($CODE)
+    - pattern: $FS.readFile($PATH)
+
+###############################################################################
+# ============================= ASYNC / PROMISE ================================
+###############################################################################
+
+- id: unhandled-promise-rejection
+  message: Promise rejection not handled
+  severity: WARNING
+  languages: [javascript, typescript]
+  patterns:
+    - pattern: |
+        $PROMISE.then(...)
+
+###############################################################################
+# ============================= PROTOTYPE POLLUTION ============================
+###############################################################################
+
+- id: prototype-pollution
+  message: Prototype pollution vulnerability
+  severity: ERROR
+  languages: [javascript, typescript]
+  patterns:
+    - pattern: |
+        $OBJ.__proto__.$PROP = $VAL
+    - pattern: |
+        $OBJ.constructor.prototype.$PROP = $VAL
+    - pattern: |
+        Object.assign($TARGET, $SOURCE)
+    - metavariable-pattern:
+        metavariable: $SOURCE
+        patterns:
+          - pattern-either:
+              - pattern: $REQ.body
+              - pattern: $REQ.query
+              - pattern: $REQ.params
+
+- id: prototype-pollution-advanced
+  message: >
+    CRITICAL: Prototype pollution via unsafe object merge with user input
+    (body, query, search params, location, etc.).
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-sources:
+    # ===== Browser / client =====
+    - pattern: location.search
+    - pattern: location.hash
+    - pattern: location.href
+    - pattern: window.location.search
+    - pattern: window.location.hash
+    - pattern: document.URL
+    - pattern: new URLSearchParams($P).get($K)
+    - pattern: new URLSearchParams($P).getAll($K)
+    - pattern: $U.searchParams.get($K)
+    - pattern: new URL($U).searchParams.get($K)
+    - pattern: event.data
+    - pattern: event.target.value
+    - pattern: window.name
+    - pattern: document.referrer
+    - pattern: localStorage.getItem($K)
+    - pattern: sessionStorage.getItem($K)
+    - pattern: req.nextUrl.searchParams.get($K)
+    - pattern: req.nextUrl.searchParams
+    # ===== Server / API =====
+    - pattern: req.body
+    - pattern: req.body.$X
+    - pattern: req.query
+    - pattern: req.query.$X
+    - pattern: req.params
+    - pattern: req.params.$X
+    - pattern: JSON.parse(req.body)
+    - pattern: args.input
+    - pattern: args.$X
+    - pattern: ctx.request.body
+    - pattern: ctx.query
+    - pattern: ctx.params
+    - pattern: request.body
+    - pattern: request.body.$X
+    - pattern: request.query
+    - pattern: request.query.$X
+    - pattern: request.params
+    - pattern: context.req.body
+    - pattern: context.query
+    - pattern: variables.$X
+  pattern-sinks:
+    - pattern: Object.assign($TARGET, ...)
+    - pattern: Object.assign($TARGET, $SOURCE)
+    - pattern: _.merge($TARGET, ...)
+    - pattern: _.merge($TARGET, $SOURCE)
+    - pattern: _.defaultsDeep($TARGET, ...)
+    - pattern: _.defaultsDeep($TARGET, $SOURCE)
+    - pattern: deepmerge($TARGET, ...)
+    - pattern: deepmerge($TARGET, $SOURCE)
+    - pattern: extend($TARGET, ...)
+    - pattern: extend($TARGET, $SOURCE)
+    - pattern: $.extend($TARGET, ...)
+    - pattern: $.extend($TARGET, $SOURCE)
+    - pattern: merge($TARGET, $SOURCE)
+    - pattern: merge($TARGET, ...)
+  pattern-sanitizers:
+    - pattern: pick($OBJ, $KEYS)
+    - pattern: omit($OBJ, $KEYS)
+    - pattern: _.pick($OBJ, $KEYS)
+    - pattern: _.omit($OBJ, $KEYS)
+    - pattern: schema.parse($DATA)
+    - pattern: zod.parse($DATA)
+    - pattern: joi.validate($DATA, ...)
+    - pattern: yup.validate($DATA, ...)
+  metadata:
+    category: security
+    cwe: "CWE-1321"
+    confidence: very-high
+
+- id: prototype-pollution-explicit
+  message: >
+    CRITICAL: Prototype pollution via __proto__ or constructor.prototype
+    assignment (explicit or spread).
+  severity: ERROR
+  languages: [javascript, typescript]
+  pattern-either:
+    - pattern: $OBJ.__proto__ = ...
+    - pattern: $OBJ["__proto__"] = ...
+    - pattern: $OBJ['__proto__'] = ...
+    - pattern: $OBJ.constructor.prototype = ...
+    - pattern: $OBJ.__proto__[$K] = ...
+    - pattern: $OBJ["__proto__"][$K] = ...
+    - pattern: $OBJ.constructor.prototype[$K] = ...
+    - pattern: "{ ...$REST, __proto__: $VAL }"
+    - pattern: "{ __proto__: $VAL, ...$REST }"
+    - pattern: "{ __proto__: $VAL }"
+  metadata:
+    category: security
+    cwe: "CWE-1321"
+    confidence: very-high
+
+# Taint: user input (search params, body, location, etc.) → __proto__ / dynamic key.
+# No sanitizers – broad sources to avoid missing real issues.
+- id: prototype-pollution-taint
+  message: >
+    CRITICAL: Prototype pollution – user-controlled data (search params, body,
+    location, etc.) reaches __proto__/constructor.prototype or dynamic key
+    assignment.
+  severity: ERROR
+  languages: [javascript, typescript]
+  mode: taint
+  options:
+    symbolic_propagation: true
+  pattern-sources:
+    # ===== Browser / client =====
+    - pattern: location.search
+    - pattern: location.hash
+    - pattern: location.href
+    - pattern: window.location.search
+    - pattern: window.location.hash
+    - pattern: document.URL
+    - pattern: new URLSearchParams($P).get($K)
+    - pattern: new URLSearchParams($P).getAll($K)
+    - pattern: $U.searchParams.get($K)
+    - pattern: new URL($U).searchParams.get($K)
+    - pattern: event.data
+    - pattern: event.target.value
+    - pattern: window.name
+    - pattern: document.referrer
+    - pattern: localStorage.getItem($K)
+    - pattern: sessionStorage.getItem($K)
+    - pattern: req.nextUrl.searchParams.get($K)
+    - pattern: req.nextUrl.searchParams
+    # ===== Server / API =====
+    - pattern: req.body
+    - pattern: req.body.$X
+    - pattern: req.query
+    - pattern: req.query.$X
+    - pattern: req.params
+    - pattern: req.params.$X
+    - pattern: JSON.parse(req.body)
+    - pattern: args.input
+    - pattern: args.$X
+    - pattern: ctx.request.body
+    - pattern: ctx.query
+    - pattern: ctx.params
+    - pattern: request.body
+    - pattern: request.body.$X
+    - pattern: request.query
+    - pattern: request.query.$X
+    - pattern: request.params
+    - pattern: context.req.body
+    - pattern: context.query
+    - pattern: variables.$X
+  pattern-sinks:
+    # Explicit __proto__ / constructor.prototype
+    - pattern: $OBJ.__proto__ = $DATA
+    - pattern: $OBJ["__proto__"] = $DATA
+    - pattern: $OBJ['__proto__'] = $DATA
+    - pattern: $OBJ.constructor.prototype = $DATA
+    - pattern: $OBJ.__proto__[$K] = $V
+    - pattern: $OBJ["__proto__"][$K] = $V
+    - pattern: $OBJ.constructor.prototype[$K] = $V
+    # Dynamic key (user-controlled key can be "__proto__")
+    - pattern: $OBJ[$KEY] = $VAL
+    - pattern: $OBJ[$KEY][$NEST] = $VAL
+    # Merge/assign with user input as source
+    - pattern: Object.assign($TARGET, $SOURCE)
+    - pattern: Object.assign($TARGET, ...$SOURCES)
+    - pattern: _.merge($TARGET, $SOURCE)
+    - pattern: _.defaultsDeep($TARGET, $SOURCE)
+    - pattern: deepmerge($TARGET, $SOURCE)
+    - pattern: extend($TARGET, $SOURCE)
+    - pattern: $.extend($TARGET, $SOURCE)
+  metadata:
+    category: security
+    cwe: "CWE-1321"
+    confidence: very-high

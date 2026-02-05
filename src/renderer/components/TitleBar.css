@@ -1,0 +1,85 @@
+/* Title bar – uses App.css variables */
+
+.titlebar {
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 0 var(--space-xl);
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Left
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.titlebar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+
+.titlebar-brand {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Center
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.titlebar-center {
+  flex: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Controls
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.titlebar-controls {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  -webkit-app-region: no-drag;
+}
+
+.tb-btn {
+  width: 26px;
+  height: 18px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.tb-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.tb-close:hover {
+  background: var(--accent);
+  color: var(--text-primary);
+}

@@ -1,0 +1,804 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CleanTraffic - Compact Repeater
+   Red accent, bold text
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.repeater {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: hsl(220, 20%, 7%);
+}
+
+/* Global input/select/textarea reset for Repeater */
+.repeater input,
+.repeater select,
+.repeater textarea {
+  background: hsl(220, 20%, 8%) !important;
+  border: 1px solid hsl(220, 12%, 18%) !important;
+  color: #fff !important;
+  font-family: 'JetBrains Mono', monospace;
+  border-radius: 3px;
+}
+
+.repeater input:focus,
+.repeater select:focus,
+.repeater textarea:focus {
+  outline: none !important;
+  border-color: #ff4444 !important;
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
+}
+
+.repeater input::placeholder,
+.repeater textarea::placeholder {
+  color: hsl(210, 8%, 40%) !important;
+}
+
+.repeater select option {
+  background: hsl(220, 20%, 10%);
+  color: #fff;
+}
+
+.repeater-header {
+  padding: 6px 10px;
+  border-bottom: 1px solid hsl(220, 12%, 15%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.repeater-title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.repeater-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.repeater-subtitle {
+  font-size: 8px;
+  font-weight: 600;
+  color: hsl(210, 10%, 50%);
+}
+
+.repeater-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: hsl(220, 16%, 13%);
+  border: 1px solid hsl(220, 12%, 18%);
+  border-radius: 3px;
+  color: hsl(210, 12%, 75%);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 600;
+  transition: all 0.08s ease;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: hsl(220, 14%, 15%);
+  border-color: hsl(220, 12%, 22%);
+  color: #fff;
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.action-btn.primary {
+  background: #ff4444;
+  border-color: transparent;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.action-btn.primary:hover:not(:disabled) {
+  background: #ff5555;
+  box-shadow: 0 0 12px rgba(255, 68, 68, 0.4);
+}
+
+.action-icon {
+  width: 11px;
+  height: 11px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Tabs
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.repeater-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 5px 10px;
+  background: hsl(220, 18%, 9%);
+  border-bottom: 1px solid hsl(220, 12%, 15%);
+}
+
+.repeater-tab {
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  color: hsl(210, 10%, 55%);
+  font-size: 9px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.08s ease;
+}
+
+.repeater-tab:hover {
+  color: #fff;
+  background: hsl(220, 16%, 14%);
+}
+
+.repeater-tab.active {
+  color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Split Panels
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.repeater-panels {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.repeater-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.repeater-panel:first-child {
+  border-right: 1px solid hsl(220, 12%, 15%);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  background: hsl(220, 18%, 9%);
+  border-bottom: 1px solid hsl(220, 12%, 15%);
+}
+
+.panel-title {
+  font-size: 8px;
+  font-weight: 700;
+  color: hsl(210, 10%, 55%);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.panel-content {
+  flex: 1;
+  overflow: auto;
+  padding: 6px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   URL Input Bar
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.url-bar {
+  display: flex;
+  gap: 4px;
+  padding: 6px 10px;
+  background: hsl(220, 18%, 9%);
+  border-bottom: 1px solid hsl(220, 12%, 15%);
+}
+
+.repeater .method-select {
+  flex-shrink: 0;
+  padding: 6px 10px !important;
+  background: hsl(220, 16%, 13%) !important;
+  border: 1px solid hsl(220, 12%, 18%) !important;
+  border-radius: 3px;
+  color: #fff !important;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: 70px;
+}
+
+.repeater .method-select:focus {
+  outline: none !important;
+  border-color: #ff4444 !important;
+}
+
+.repeater .url-input {
+  flex: 1;
+  padding: 6px 10px !important;
+  background: hsl(220, 20%, 8%) !important;
+  border: 1px solid hsl(220, 12%, 18%) !important;
+  border-radius: 3px;
+  color: #fff !important;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.repeater .url-input:focus {
+  outline: none !important;
+  border-color: #ff4444 !important;
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
+}
+
+.repeater .url-input::placeholder {
+  color: hsl(210, 8%, 40%) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Headers Editor
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.headers-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.header-row {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.header-input {
+  flex: 1;
+  padding: 3px 5px;
+  background: hsl(220, 16%, 11%);
+  border: 1px solid hsl(220, 12%, 14%);
+  border-radius: 2px;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.header-input:focus {
+  outline: none;
+  border-color: #ff4444;
+}
+
+.header-input::placeholder {
+  color: hsl(210, 8%, 40%);
+}
+
+.header-key {
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.header-remove-btn {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 2px;
+  color: hsl(210, 8%, 45%);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.header-remove-btn:hover {
+  color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.add-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 6px;
+  background: transparent;
+  border: 1px dashed hsl(220, 12%, 22%);
+  border-radius: 3px;
+  color: hsl(210, 10%, 55%);
+  font-size: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 3px;
+  transition: all 0.08s ease;
+}
+
+.add-header-btn:hover {
+  border-color: rgba(255, 68, 68, 0.5);
+  color: #ff6666;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Body Editor
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.body-editor {
+  width: 100%;
+  height: 100%;
+  min-height: 100px;
+  padding: 6px;
+  background: hsl(220, 20%, 7%);
+  border: 1px solid hsl(220, 12%, 14%);
+  border-radius: 3px;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.5;
+  resize: none;
+}
+
+.body-editor:focus {
+  outline: none;
+  border-color: #ff4444;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Repeater View (actual classes used in TSX)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.repeater-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.repeater-section {
+  background: hsl(220, 16%, 10%);
+  border: 1px solid hsl(220, 12%, 15%);
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.section-header {
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid hsl(220, 12%, 15%);
+}
+
+.section-subheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 8px;
+  font-weight: 700;
+  color: hsl(210, 10%, 55%);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.request-line {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.headers-section,
+.body-section {
+  margin-bottom: 8px;
+}
+
+.headers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.header-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.repeater .header-key-input,
+.repeater .header-value-input {
+  flex: 1;
+  padding: 5px 8px !important;
+  background: hsl(220, 20%, 8%) !important;
+  border: 1px solid hsl(220, 12%, 18%) !important;
+  border-radius: 3px;
+  color: #fff !important;
+  font-size: 10px;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.repeater .header-key-input {
+  max-width: 160px;
+  flex-shrink: 0;
+}
+
+.repeater .header-key-input:focus,
+.repeater .header-value-input:focus {
+  outline: none !important;
+  border-color: #ff4444 !important;
+}
+
+.repeater .header-key-input::placeholder,
+.repeater .header-value-input::placeholder {
+  color: hsl(210, 8%, 40%) !important;
+}
+
+.add-btn {
+  padding: 3px 8px;
+  background: transparent;
+  border: 1px dashed hsl(220, 12%, 25%);
+  border-radius: 3px;
+  color: hsl(210, 10%, 55%);
+  font-size: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.add-btn:hover {
+  border-color: rgba(255, 68, 68, 0.5);
+  color: #ff6666;
+}
+
+.remove-btn {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  color: hsl(210, 8%, 40%);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.remove-btn:hover {
+  color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.repeater .body-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px !important;
+  background: hsl(220, 20%, 8%) !important;
+  border: 1px solid hsl(220, 12%, 18%) !important;
+  border-radius: 3px;
+  color: #fff !important;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.repeater .body-textarea:focus {
+  outline: none !important;
+  border-color: #ff4444 !important;
+}
+
+.repeater .body-textarea::placeholder {
+  color: hsl(210, 8%, 40%) !important;
+}
+
+.empty-headers {
+  padding: 12px;
+  background: hsl(220, 20%, 8%);
+  border-radius: 3px;
+  text-align: center;
+}
+
+.empty-headers p {
+  font-size: 9px;
+  color: hsl(210, 10%, 55%);
+  margin: 0 0 4px;
+}
+
+.empty-headers .hint {
+  font-size: 8px;
+  color: hsl(210, 8%, 40%);
+}
+
+/* Response Section */
+.response-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid hsl(220, 12%, 15%);
+}
+
+.ask-chatgpt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: hsl(220, 16%, 13%);
+  border: 1px solid hsl(220, 12%, 18%);
+  border-radius: 3px;
+  color: hsl(210, 10%, 55%);
+  font-size: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.ask-chatgpt-btn:hover {
+  border-color: rgba(255, 68, 68, 0.3);
+  color: #ff6666;
+}
+
+.response-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.status-badge {
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.response-headers {
+  margin-bottom: 8px;
+}
+
+.response-headers-kv {
+  background: hsl(220, 20%, 8%);
+  border: 1px solid hsl(220, 12%, 14%);
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+}
+
+.response-header-row {
+  display: flex;
+  padding: 3px 6px;
+  border-bottom: 1px solid hsl(220, 12%, 12%);
+}
+
+.response-header-row:last-child {
+  border-bottom: none;
+}
+
+.response-header-key {
+  flex-shrink: 0;
+  min-width: 120px;
+  max-width: 160px;
+  font-weight: 600;
+  color: #ff6666;
+  padding-right: 8px;
+}
+
+.response-header-value {
+  flex: 1;
+  color: hsl(210, 12%, 70%);
+  word-break: break-all;
+}
+
+.header-expand-btn {
+  flex-shrink: 0;
+  padding: 1px 4px;
+  background: transparent;
+  border: none;
+  color: hsl(210, 8%, 45%);
+  cursor: pointer;
+  font-size: 8px;
+}
+
+.header-expand-btn:hover {
+  color: #fff;
+}
+
+.response-body-content {
+  background: hsl(220, 20%, 7%);
+  border: 1px solid hsl(220, 12%, 14%);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.response-body-monaco {
+  position: relative;
+}
+
+.response-body-error {
+  padding: 4px 8px;
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff6666;
+  font-size: 9px;
+}
+
+.response-body-loading {
+  padding: 16px;
+  text-align: center;
+  color: hsl(210, 10%, 55%);
+  font-size: 10px;
+}
+
+.empty-response {
+  padding: 16px;
+  text-align: center;
+  color: hsl(210, 10%, 50%);
+  font-size: 10px;
+  font-style: italic;
+}
+
+.binary-data {
+  padding: 12px;
+  background: hsl(220, 16%, 11%);
+  border-radius: 3px;
+  color: hsl(210, 10%, 55%);
+  font-size: 10px;
+}
+
+.error-message {
+  padding: 8px;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  border-radius: 3px;
+  color: #ff6666;
+  font-size: 9px;
+}
+
+.content-type-badge {
+  font-size: 7px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  color: #fff;
+  margin-left: 8px;
+}
+
+/* Header Row */
+.repeater-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.repeater-placeholder-hint {
+  font-size: 8px;
+  font-weight: 600;
+  color: hsl(210, 10%, 45%);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.repeater-icon {
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Response View
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.response-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px;
+  background: hsl(220, 16%, 11%);
+  border-radius: 3px;
+  margin-bottom: 6px;
+}
+
+.response-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+.response-code.success { background: rgba(68, 204, 102, 0.15); color: #44cc66; }
+.response-code.redirect { background: rgba(68, 136, 255, 0.15); color: #4488ff; }
+.response-code.client-error { background: rgba(255, 170, 51, 0.15); color: #ffaa33; }
+.response-code.server-error { background: rgba(255, 68, 68, 0.15); color: #ff4444; }
+
+.response-time {
+  font-size: 8px;
+  font-weight: 600;
+  color: hsl(210, 10%, 55%);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.response-body {
+  background: hsl(220, 20%, 7%);
+  border: 1px solid hsl(220, 12%, 14%);
+  border-radius: 3px;
+  padding: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: hsl(210, 12%, 75%);
+  overflow: auto;
+  max-height: 350px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Empty State
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.repeater-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+}
+
+.repeater-empty-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  opacity: 0.2;
+}
+
+.repeater-empty h3 {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 3px;
+}
+
+.repeater-empty p {
+  font-size: 9px;
+  font-weight: 500;
+  color: hsl(210, 10%, 55%);
+  max-width: 180px;
+  line-height: 1.4;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Scrollbar
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.panel-content::-webkit-scrollbar,
+.response-body::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.panel-content::-webkit-scrollbar-track,
+.response-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-content::-webkit-scrollbar-thumb,
+.response-body::-webkit-scrollbar-thumb {
+  background: hsl(220, 12%, 18%);
+  border-radius: 2px;
+}

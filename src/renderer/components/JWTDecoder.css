@@ -1,0 +1,420 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CleanTraffic - Compact JWT Decoder
+   Red accent, bold text
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.jwt-decoder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: hsl(220, 20%, 7%);
+  color: #fff;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Header
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.jwt-decoder-header {
+  padding: 6px 10px;
+  border-bottom: 1px solid hsl(220, 12%, 15%);
+  background: hsl(220, 18%, 9%);
+}
+
+.jwt-decoder-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.jwt-icon {
+  flex-shrink: 0;
+}
+
+.jwt-decoder-subtitle {
+  font-size: 8px;
+  font-weight: 600;
+  color: hsl(210, 10%, 50%);
+  margin: 0 0 8px;
+}
+
+/* Mode Switch */
+.jwt-mode-switch {
+  display: flex;
+  gap: 2px;
+  background: hsl(220, 16%, 10%);
+  padding: 2px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.mode-btn {
+  padding: 4px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  color: hsl(210, 10%, 55%);
+  font-size: 9px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.mode-btn:hover {
+  color: #fff;
+}
+
+.mode-btn.active {
+  background: #ff4444;
+  color: #fff;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Content
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.jwt-decoder-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Input Section
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.jwt-input-section,
+.jwt-encode-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-group label {
+  font-size: 8px;
+  font-weight: 700;
+  color: hsl(210, 10%, 55%);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input-with-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.jwt-input {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px;
+  background: hsl(220, 20%, 8%);
+  border: 1px solid hsl(220, 12%, 18%);
+  border-radius: 4px;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.jwt-input:focus {
+  outline: none;
+  border-color: #ff4444;
+}
+
+.jwt-input::placeholder {
+  color: hsl(210, 8%, 40%);
+}
+
+input.jwt-input {
+  min-height: auto;
+  padding: 6px 8px;
+}
+
+.input-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.decode-btn,
+.encode-btn {
+  background: #ff4444;
+  color: #fff;
+}
+
+.decode-btn:hover,
+.encode-btn:hover {
+  background: #ff5555;
+  box-shadow: 0 0 8px rgba(255, 68, 68, 0.3);
+}
+
+.clear-btn,
+.copy-btn {
+  background: hsl(220, 16%, 15%);
+  border: 1px solid hsl(220, 12%, 20%);
+  color: hsl(210, 12%, 70%);
+}
+
+.clear-btn:hover,
+.copy-btn:hover {
+  background: hsl(220, 16%, 18%);
+  color: #fff;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Encode Section
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.encode-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.encoded-token-section {
+  margin-top: 8px;
+  padding: 8px;
+  background: hsl(220, 16%, 10%);
+  border: 1px solid hsl(220, 12%, 15%);
+  border-radius: 4px;
+}
+
+.encoded-token-section label {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  color: hsl(210, 10%, 55%);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.encoded-token-display {
+  position: relative;
+}
+
+.token-output {
+  margin: 0;
+  padding: 8px;
+  background: hsl(220, 20%, 7%);
+  border: 1px solid hsl(220, 12%, 14%);
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: hsl(210, 12%, 70%);
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.copy-token-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 4px 8px;
+  background: hsl(220, 16%, 15%);
+  border: 1px solid hsl(220, 12%, 20%);
+  border-radius: 3px;
+  color: hsl(210, 10%, 55%);
+  font-size: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.copy-token-btn:hover {
+  background: hsl(220, 16%, 18%);
+  color: #fff;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Error
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.jwt-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  border-radius: 4px;
+  color: #ff6666;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Decoded View
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.jwt-decoded {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jwt-status {
+  margin-bottom: 4px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.status-badge.valid {
+  background: rgba(68, 204, 102, 0.15);
+  color: #44cc66;
+}
+
+.status-badge.invalid {
+  background: rgba(255, 68, 68, 0.15);
+  color: #ff4444;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   JWT Sections
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.jwt-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jwt-section {
+  background: hsl(220, 16%, 10%);
+  border: 1px solid hsl(220, 12%, 15%);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.jwt-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: hsl(220, 16%, 12%);
+  border-bottom: 1px solid hsl(220, 12%, 15%);
+}
+
+.jwt-section-header h3 {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.jwt-section-content {
+  padding: 8px;
+}
+
+.json-display {
+  margin: 0 0 8px;
+  padding: 8px;
+  background: hsl(220, 20%, 7%);
+  border: 1px solid hsl(220, 12%, 14%);
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: hsl(210, 12%, 70%);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.signature-display {
+  margin-bottom: 8px;
+  padding: 8px;
+  background: hsl(220, 20%, 7%);
+  border: 1px solid hsl(220, 12%, 14%);
+  border-radius: 3px;
+}
+
+.signature-display code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: hsl(210, 12%, 70%);
+  word-break: break-all;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   JWT Info
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.jwt-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 9px;
+}
+
+.info-label {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: hsl(210, 10%, 50%);
+}
+
+.info-value {
+  color: hsl(210, 12%, 70%);
+  font-family: 'JetBrains Mono', monospace;
+  word-break: break-all;
+}
+
+.info-value.expired {
+  color: #ff4444;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Scrollbar
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.jwt-decoder-content::-webkit-scrollbar,
+.json-display::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.jwt-decoder-content::-webkit-scrollbar-track,
+.json-display::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.jwt-decoder-content::-webkit-scrollbar-thumb,
+.json-display::-webkit-scrollbar-thumb {
+  background: hsl(220, 12%, 18%);
+  border-radius: 2px;
+}

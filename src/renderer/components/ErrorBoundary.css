@@ -1,0 +1,127 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CleanTraffic - Compact Error Boundary
+   Red accent, bold text
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.error-boundary {
+  padding: 12px;
+  background: rgba(255, 68, 68, 0.08);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 11px;
+}
+
+.error-boundary-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.error-boundary-icon {
+  font-size: 18px;
+  line-height: 1;
+  color: #ff4444;
+  flex-shrink: 0;
+}
+
+.error-boundary-title-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.error-boundary-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ff4444;
+}
+
+.error-boundary-message {
+  margin: 0 0 10px 0;
+  color: hsl(210, 10%, 65%);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.error-boundary-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.error-boundary-btn {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.error-boundary-btn.primary {
+  background: #ff4444;
+  color: #fff;
+}
+
+.error-boundary-btn.primary:hover {
+  background: #ff5555;
+}
+
+.error-boundary-btn.secondary {
+  background: hsl(220, 16%, 15%);
+  color: hsl(210, 12%, 75%);
+  border: 1px solid hsl(220, 12%, 22%);
+}
+
+.error-boundary-btn.secondary:hover {
+  background: hsl(220, 14%, 18%);
+  color: #fff;
+}
+
+.error-boundary-details {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.error-boundary-stack {
+  margin-bottom: 8px;
+}
+
+.error-boundary-stack:last-child {
+  margin-bottom: 0;
+}
+
+.error-boundary-stack strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 8px;
+  font-weight: 700;
+  color: hsl(210, 10%, 50%);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.error-boundary-stack pre {
+  margin: 0;
+  padding: 8px;
+  background: hsl(220, 20%, 7%);
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+  color: hsl(210, 12%, 70%);
+  overflow-x: auto;
+  max-height: 150px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

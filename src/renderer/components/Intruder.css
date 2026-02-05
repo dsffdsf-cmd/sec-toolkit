@@ -1,0 +1,770 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CleanTraffic - Compact Intruder
+   Red accent, bold text
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.intruder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: hsl(220, 20%, 7%);
+}
+
+.intruder-header {
+  padding: 6px 10px;
+  border-bottom: 1px solid hsl(220, 12%, 15%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.intruder-title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.intruder-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.intruder-subtitle {
+  font-size: 8px;
+  font-weight: 600;
+  color: hsl(210, 10%, 50%);
+}
+
+.intruder-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.attack-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: #ff4444;
+  border: none;
+  border-radius: 3px;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.12s ease;
+}
+
+.attack-btn:hover:not(:disabled) {
+  background: #ff5555;
+  box-shadow: 0 0 12px rgba(255, 68, 68, 0.4);
+}
+
+.attack-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Tabs
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.intruder-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 5px 10px;
+  background: hsl(220, 18%, 9%);
+  border-bottom: 1px solid hsl(220, 12%, 15%);
+}
+
+.intruder-tab {
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  color: hsl(210, 10%, 55%);
+  font-size: 9px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.08s ease;
+}
+
+.intruder-tab:hover {
+  color: #fff;
+  background: hsl(220, 16%, 14%);
+}
+
+.intruder-tab.active {
+  color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Content
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.intruder-content {
+  flex: 1;
+  overflow: auto;
+  padding: 8px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Positions Editor
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.positions-editor {
+  background: hsl(220, 16%, 13%);
+  border: 1px solid hsl(220, 12%, 18%);
+  border-radius: 3px;
+  padding: 6px;
+  margin-bottom: 8px;
+}
+
+.positions-toolbar {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 6px;
+}
+
+.position-btn {
+  padding: 3px 6px;
+  background: hsl(220, 14%, 15%);
+  border: 1px solid hsl(220, 12%, 18%);
+  border-radius: 3px;
+  color: hsl(210, 12%, 75%);
+  font-size: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.08s ease;
+}
+
+.position-btn:hover {
+  background: hsl(220, 12%, 17%);
+  color: #fff;
+}
+
+.position-btn.add {
+  border-color: rgba(255, 68, 68, 0.3);
+  color: #ff6666;
+}
+
+.position-btn.add:hover {
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.position-btn.clear {
+  border-color: rgba(255, 68, 68, 0.3);
+  color: #ff4444;
+}
+
+.position-btn.clear:hover {
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.positions-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 6px;
+  background: hsl(220, 20%, 7%);
+  border: 1px solid hsl(220, 12%, 14%);
+  border-radius: 3px;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.positions-textarea:focus {
+  outline: none;
+  border-color: #ff4444;
+}
+
+.position-marker {
+  background: rgba(255, 68, 68, 0.3);
+  color: #ff8888;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Payloads
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.payloads-section {
+  background: hsl(220, 16%, 13%);
+  border: 1px solid hsl(220, 12%, 18%);
+  border-radius: 3px;
+  padding: 6px;
+}
+
+.payloads-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.payloads-title {
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.payloads-count {
+  font-size: 8px;
+  font-weight: 600;
+  color: hsl(210, 10%, 55%);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.payloads-list {
+  background: hsl(220, 20%, 7%);
+  border: 1px solid hsl(220, 12%, 14%);
+  border-radius: 3px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.payload-item {
+  padding: 3px 6px;
+  border-bottom: 1px solid hsl(220, 12%, 12%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  color: hsl(210, 12%, 75%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payload-item:last-child {
+  border-bottom: none;
+}
+
+.payload-item:hover {
+  background: hsl(220, 16%, 11%);
+}
+
+.payload-remove {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: hsl(210, 8%, 45%);
+  cursor: pointer;
+  font-size: 10px;
+  display: none;
+}
+
+.payload-item:hover .payload-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payload-remove:hover {
+  color: #ff4444;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Results Table
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+}
+
+.results-table th {
+  padding: 4px 6px;
+  text-align: left;
+  background: hsl(220, 16%, 13%);
+  color: hsl(210, 10%, 55%);
+  font-weight: 700;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid hsl(220, 12%, 18%);
+}
+
+.results-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid hsl(220, 12%, 12%);
+  color: hsl(210, 12%, 75%);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+}
+
+.results-table tr:hover td {
+  background: hsl(220, 16%, 11%);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Scrollbar
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.intruder-content::-webkit-scrollbar,
+.payloads-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.intruder-content::-webkit-scrollbar-track,
+.payloads-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.intruder-content::-webkit-scrollbar-thumb,
+.payloads-list::-webkit-scrollbar-thumb {
+  background: hsl(220, 12%, 18%);
+  border-radius: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Intruder View (actual classes used in TSX)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.intruder-view {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: hsl(220, 20%, 7%);
+  color: #fff;
+}
+
+.intruder-view.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.intruder-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid hsl(220, 12%, 15%);
+  background: hsl(220, 18%, 9%);
+}
+
+.intruder-title {
+  flex-shrink: 0;
+}
+
+.intruder-subtitle {
+  font-size: 8px;
+  font-weight: 600;
+  color: hsl(210, 10%, 50%);
+  margin: 0;
+}
+
+.intruder-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.intruder-config {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.config-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.config-section label {
+  font-size: 8px;
+  font-weight: 700;
+  color: hsl(210, 10%, 55%);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.config-section select,
+.config-section input,
+.config-section textarea {
+  padding: 5px 8px;
+  background: hsl(220, 20%, 8%);
+  border: 1px solid hsl(220, 12%, 18%);
+  border-radius: 3px;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.config-section select:focus,
+.config-section input:focus,
+.config-section textarea:focus {
+  outline: none;
+  border-color: #ff4444;
+}
+
+.config-section textarea {
+  min-height: 60px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.config-section textarea::placeholder,
+.config-section input::placeholder {
+  color: hsl(210, 8%, 40%);
+}
+
+.config-row {
+  display: flex;
+  gap: 8px;
+}
+
+.config-row .config-section {
+  flex: 1;
+}
+
+/* Request Editor */
+.request-editor-section {
+  background: hsl(220, 16%, 10%);
+  border: 1px solid hsl(220, 12%, 15%);
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.request-editor-section h3 {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.editor-hint {
+  font-size: 8px;
+  color: hsl(210, 10%, 50%);
+  margin: 0 0 8px;
+}
+
+.editor-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.editor-row label {
+  font-size: 8px;
+  font-weight: 700;
+  color: hsl(210, 10%, 55%);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.editor-row input,
+.editor-row textarea,
+.editor-row select {
+  padding: 5px 8px;
+  background: hsl(220, 20%, 8%);
+  border: 1px solid hsl(220, 12%, 18%);
+  border-radius: 3px;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.editor-row input:focus,
+.editor-row textarea:focus,
+.editor-row select:focus {
+  outline: none;
+  border-color: #ff4444;
+}
+
+.editor-row textarea {
+  min-height: 60px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.editor-row input::placeholder,
+.editor-row textarea::placeholder {
+  color: hsl(210, 8%, 40%);
+}
+
+.method-select {
+  width: auto;
+  min-width: 80px;
+}
+
+.url-input {
+  width: 100%;
+}
+
+.headers-textarea {
+  min-height: 80px;
+}
+
+.body-textarea {
+  min-height: 80px;
+}
+
+/* Fuzz Positions */
+.fuzz-positions-info {
+  margin-top: 8px;
+  padding: 6px 8px;
+  background: hsl(220, 18%, 10%);
+  border-radius: 3px;
+  font-size: 9px;
+}
+
+.fuzz-positions-info strong {
+  color: hsl(210, 10%, 55%);
+  font-weight: 700;
+}
+
+.positions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.position-tag {
+  padding: 2px 6px;
+  background: rgba(255, 68, 68, 0.15);
+  border-radius: 3px;
+  color: #ff6666;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.no-positions {
+  color: hsl(210, 8%, 45%);
+  font-style: italic;
+}
+
+/* Attack Actions */
+.intruder-actions {
+  margin-top: 8px;
+}
+
+.attack-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.12s ease;
+}
+
+.attack-btn.start {
+  background: #ff4444;
+  color: #fff;
+}
+
+.attack-btn.start:hover {
+  background: #ff5555;
+  box-shadow: 0 0 12px rgba(255, 68, 68, 0.4);
+}
+
+.attack-btn.stop {
+  background: hsl(220, 16%, 18%);
+  color: #fff;
+  border: 1px solid hsl(220, 12%, 22%);
+}
+
+.attack-btn.stop:hover {
+  background: hsl(220, 16%, 22%);
+}
+
+/* Attack Progress */
+.attack-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: hsl(220, 16%, 13%);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #ff4444;
+  transition: width 0.2s ease;
+}
+
+.progress-text {
+  font-size: 9px;
+  font-weight: 700;
+  color: hsl(210, 12%, 70%);
+  font-family: 'JetBrains Mono', monospace;
+  min-width: 40px;
+}
+
+/* Attack Results */
+.attack-results {
+  margin-top: 12px;
+  background: hsl(220, 16%, 10%);
+  border: 1px solid hsl(220, 12%, 15%);
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid hsl(220, 12%, 15%);
+}
+
+.results-header h3 {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.results-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.stat-item {
+  font-size: 8px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: hsl(220, 16%, 13%);
+  color: hsl(210, 10%, 55%);
+}
+
+.stat-item.success {
+  background: rgba(68, 204, 102, 0.15);
+  color: #44cc66;
+}
+
+.stat-item.error {
+  background: rgba(255, 68, 68, 0.15);
+  color: #ff4444;
+}
+
+.stat-item.anomaly {
+  background: rgba(255, 170, 51, 0.15);
+  color: #ffaa33;
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.result-item {
+  background: hsl(220, 20%, 8%);
+  border: 1px solid hsl(220, 12%, 14%);
+  border-radius: 3px;
+  padding: 6px;
+}
+
+.result-item.has-anomaly {
+  border-color: rgba(255, 170, 51, 0.3);
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+}
+
+.result-index {
+  font-weight: 700;
+  color: hsl(210, 10%, 50%);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.anomaly-badge {
+  font-size: 10px;
+}
+
+.status-badge {
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+}
+
+.result-time {
+  color: hsl(210, 10%, 55%);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.result-payload {
+  flex: 1;
+  color: hsl(210, 12%, 70%);
+  font-family: 'JetBrains Mono', monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-error {
+  margin-top: 4px;
+  padding: 4px 6px;
+  background: rgba(255, 68, 68, 0.1);
+  border-radius: 2px;
+  color: #ff6666;
+  font-size: 8px;
+}
+
+.result-body {
+  margin-top: 4px;
+}
+
+.result-body details {
+  font-size: 9px;
+}
+
+.result-body summary {
+  color: hsl(210, 10%, 55%);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.result-body pre {
+  margin: 4px 0 0;
+  padding: 6px;
+  background: hsl(220, 18%, 7%);
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: hsl(210, 12%, 65%);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

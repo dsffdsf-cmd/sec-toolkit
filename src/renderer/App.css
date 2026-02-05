@@ -1,0 +1,425 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CleanTraffic - Compact Security Suite
+   Red accent, bold typography
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ═══ Base - Deep Dark ═══ */
+  --bg-base: hsl(220, 20%, 7%);
+  --bg-primary: hsl(220, 18%, 10%);
+  --bg-secondary: hsl(220, 16%, 13%);
+  --bg-tertiary: hsl(220, 14%, 15%);
+  --bg-elevated: hsl(220, 12%, 18%);
+  --bg-hover: hsl(220, 16%, 16%);
+  
+  /* ═══ Borders ═══ */
+  --border: hsl(220, 12%, 18%);
+  --border-subtle: hsl(220, 12%, 14%);
+  --border-hover: hsl(220, 12%, 22%);
+  
+  /* ═══ Text - Bold & Clear ═══ */
+  --text-primary: #ffffff;
+  --text-secondary: hsl(210, 12%, 75%);
+  --text-muted: hsl(210, 10%, 55%);
+  --text-faint: hsl(210, 8%, 40%);
+  
+  /* ═══ Red Accent ═══ */
+  --accent: #ff4444;
+  --accent-light: #ff6666;
+  --accent-dark: #cc2222;
+  --accent-glow: rgba(255, 68, 68, 0.3);
+  
+  /* ═══ Semantic ═══ */
+  --success: #44cc66;
+  --warning: #ffaa33;
+  --error: #ff4444;
+  --info: #4488ff;
+  
+  /* ═══ Compact Spacing ═══ */
+  --space-xs: 2px;
+  --space-sm: 4px;
+  --space-md: 6px;
+  --space-lg: 8px;
+  --space-xl: 12px;
+  
+  /* ═══ Compact Radius ═══ */
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Reset & Base
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+.app-shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.4;
+}
+
+.app {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Resizable List Panel
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.list-panel {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.resize-handle {
+  width: 4px;
+  background: transparent;
+  cursor: col-resize;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  transition: background 0.15s ease;
+}
+
+.resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 40px;
+  background: var(--border);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease, height 0.15s ease;
+}
+
+.resize-handle:hover {
+  background: var(--accent-glow);
+}
+
+.resize-handle:hover::after {
+  opacity: 1;
+  height: 60px;
+  background: var(--accent);
+}
+
+.resize-handle.active {
+  background: var(--accent-glow);
+}
+
+.resize-handle.active::after {
+  opacity: 1;
+  height: 80px;
+  background: var(--accent);
+}
+
+.details-pane {
+  flex: 1;
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Scrollbar - Minimal
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Selection
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+::selection {
+  background: var(--accent-glow);
+  color: #fff;
+}
+
+/* Empty state (central placeholder when no content) */
+.app .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.app .empty-state .empty-icon {
+  font-size: 24px;
+  margin-bottom: var(--space-lg);
+  opacity: 0.4;
+}
+
+.app .empty-state p {
+  font-size: 11px;
+  font-weight: 600;
+  max-width: 220px;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Buttons - Compact
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: var(--accent-light);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Inputs - Compact
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.input {
+  padding: 4px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 10px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all 0.12s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.input::placeholder {
+  color: var(--text-faint);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Badges - Compact
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.badge-success { background: rgba(68, 204, 102, 0.15); color: var(--success); }
+.badge-warning { background: rgba(255, 170, 51, 0.15); color: var(--warning); }
+.badge-error { background: rgba(255, 68, 68, 0.15); color: var(--error); }
+.badge-info { background: rgba(68, 136, 255, 0.15); color: var(--info); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Method Colors
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.method-get { background: #4488ff; color: #fff; }
+.method-post { background: #44cc66; color: #fff; }
+.method-put { background: #ffaa33; color: #000; }
+.method-delete { background: #ff4444; color: #fff; }
+.method-patch { background: #aa66ff; color: #fff; }
+.method-head { background: #666; color: #fff; }
+.method-options { background: #44cccc; color: #fff; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Code Typography
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+code, pre, .mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Typography Helpers
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+strong, b {
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Focus Visible
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Light theme – single set of tokens
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] {
+  --bg-base: hsl(220, 14%, 96%);
+  --bg-primary: hsl(220, 12%, 98%);
+  --bg-secondary: hsl(220, 10%, 92%);
+  --bg-tertiary: hsl(220, 10%, 88%);
+  --bg-elevated: hsl(220, 8%, 90%);
+  --bg-hover: hsl(220, 12%, 90%);
+  --border: hsl(220, 10%, 78%);
+  --border-subtle: hsl(220, 10%, 85%);
+  --border-hover: hsl(220, 10%, 70%);
+  --text-primary: hsl(220, 20%, 12%);
+  --text-secondary: hsl(220, 12%, 28%);
+  --text-muted: hsl(220, 10%, 42%);
+  --text-faint: hsl(220, 8%, 55%);
+  --accent: #cc2222;
+  --accent-light: #e03535;
+  --accent-dark: #991818;
+  --accent-glow: rgba(204, 34, 34, 0.2);
+  --success: #2d9d4a;
+  --warning: #c97d0f;
+  --error: #cc2222;
+  --info: #2563c4;
+}
+
+[data-theme="light"] .app-shell {
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   High contrast (accessibility)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[data-high-contrast="true"] {
+  --border: hsl(220, 12%, 35%);
+  --border-subtle: hsl(220, 12%, 28%);
+  --border-hover: hsl(220, 12%, 45%);
+  --text-muted: hsl(210, 12%, 68%);
+  --text-faint: hsl(210, 10%, 55%);
+}
+
+[data-theme="light"][data-high-contrast="true"] {
+  --border: hsl(220, 10%, 55%);
+  --border-subtle: hsl(220, 10%, 65%);
+  --border-hover: hsl(220, 10%, 45%);
+  --text-muted: hsl(220, 10%, 28%);
+  --text-faint: hsl(220, 8%, 38%);
+}
+
+[data-high-contrast="true"] :focus-visible {
+  outline-width: 3px;
+  outline-offset: 1px;
+}

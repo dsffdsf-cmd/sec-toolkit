@@ -1,0 +1,118 @@
+/* Command palette – Ctrl+K */
+
+.command-palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  animation: commandPaletteFadeIn 0.15s ease;
+}
+
+@keyframes commandPaletteFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.command-palette {
+  width: 90%;
+  max-width: 420px;
+  background: var(--bg-primary, hsl(220, 18%, 10%));
+  border: 1px solid var(--border, hsl(220, 12%, 18%));
+  border-radius: 8px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  animation: commandPaletteSlide 0.2s ease;
+}
+
+@keyframes commandPaletteSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.command-palette-input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary, #fff);
+  background: var(--bg-secondary, hsl(220, 16%, 13%));
+  border: none;
+  border-bottom: 1px solid var(--border-subtle, hsl(220, 12%, 14%));
+  outline: none;
+}
+
+.command-palette-input::placeholder {
+  color: var(--text-faint, hsl(210, 8%, 40%));
+}
+
+.command-palette-list {
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.command-palette-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary, #fff);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.08s ease;
+}
+
+.command-palette-item:hover,
+.command-palette-item.selected {
+  background: var(--bg-hover, hsl(220, 16%, 16%));
+}
+
+.command-palette-item.selected {
+  background: var(--accent-glow);
+}
+
+.command-palette-item.empty {
+  color: var(--text-muted, hsl(210, 10%, 55%));
+  cursor: default;
+}
+
+.command-palette-item-hint {
+  font-size: 10px;
+  color: var(--text-faint, hsl(210, 8%, 40%));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.command-palette-footer {
+  padding: 6px 14px;
+  font-size: 9px;
+  color: var(--text-faint, hsl(210, 8%, 40%));
+  border-top: 1px solid var(--border-subtle, hsl(220, 12%, 14%));
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.command-palette-footer kbd {
+  padding: 2px 4px;
+  font-family: inherit;
+  background: var(--bg-tertiary, hsl(220, 14%, 15%));
+  border-radius: 3px;
+  border: 1px solid var(--border, hsl(220, 12%, 18%));
+}
