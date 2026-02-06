@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { HttpRequest } from './proxy-server';
-import { getUserDataPath } from './app-paths';
+import { getSessionsDir } from './paths';
 
 interface HAREntry {
   startedDateTime?: string;
@@ -24,7 +24,7 @@ export class SessionManager {
 
   private get sessionsDir(): string {
     if (!this._sessionsDir) {
-      this._sessionsDir = path.join(getUserDataPath(), 'sessions');
+      this._sessionsDir = getSessionsDir();
       if (!fs.existsSync(this._sessionsDir)) {
         fs.mkdirSync(this._sessionsDir, { recursive: true });
       }

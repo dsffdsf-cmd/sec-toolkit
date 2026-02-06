@@ -9,7 +9,7 @@ import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { z } from 'zod';
-import { getRulesDir, shellEscapePath } from './app-paths';
+import { getRulesDir, shellEscapePath } from './paths';
 
 /** Lazy-loaded Prettier - avoids MODULE_NOT_FOUND on macOS/packaged when paths differ */
 let prettierModule: typeof import('prettier') | null = null;

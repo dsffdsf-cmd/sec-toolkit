@@ -3,17 +3,16 @@
  * Used for webhook, GitHub token (when passed from renderer), Etherscan, etc.
  */
 
-import { app } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import type { IntegrationConfig } from '../shared/integration-config';
 import { DEFAULT_INTEGRATION_CONFIG, mergeIntegrationConfig } from '../shared/integration-config';
+import { getUserDataPath } from './paths';
 
 const CONFIG_FILENAME = 'integration-config.json';
 
 function getConfigPath(): string {
-  const userData = app.getPath('userData');
-  return path.join(userData, CONFIG_FILENAME);
+  return path.join(getUserDataPath(), CONFIG_FILENAME);
 }
 
 let cached: IntegrationConfig | null = null;

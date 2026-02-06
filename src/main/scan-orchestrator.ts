@@ -3,7 +3,7 @@
  */
 import { Worker } from 'worker_threads';
 import { ScanResult } from './scanner';
-import { getScannerWorkerPath } from './app-paths';
+import { getScannerWorkerPath } from './paths';
 
 export function runScanInWorker(
   code: string,

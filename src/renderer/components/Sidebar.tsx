@@ -3,6 +3,9 @@ import { TOOL_CONFIG, GROUP_LABELS, type ViewMode } from '../../shared/view-type
 import { SidebarIcon } from './SidebarIcons';
 import './Sidebar.css';
 
+import logoUrl from '../assets/logo.svg';
+import launchUrl from '../assets/launch.svg';
+
 interface SidebarProps {
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
@@ -38,10 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     <div className="sidebar">
       <div className="sidebar-header">
         <div className="logo">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" className="logo-svg">
-            <rect x="1" y="1" width="20" height="20" rx="4" fill="#ff4444" />
-            <circle cx="11" cy="11" r="3" fill="white" opacity="0.9" />
-          </svg>
+          <img src={logoUrl} alt="CleanTraffic" className="logo-svg" width={20} height={20} />
         </div>
         <div className="app-name">
           <span className="app-name-main">CleanTraffic</span>
@@ -55,21 +55,17 @@ const Sidebar: React.FC<SidebarProps> = ({
             className={`launch-browser-btn ${launching ? 'loading' : ''}`}
             onClick={onLaunchBrowser}
             disabled={launching}
-            title={launching ? 'Launching…' : 'Launch Browser'}
+            title={launching ? 'Starting…' : 'Start browser'}
             aria-busy={launching}
-            aria-label={launching ? 'Launching browser' : 'Launch browser for traffic interception'}
+            aria-label={launching ? 'Starting browser' : 'Start browser for traffic interception'}
           >
             <span className="launch-browser-icon" aria-hidden="true">
               {launching ? (
                 <span className="launch-browser-spinner" />
               ) : (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M2 12h20" />
-                </svg>
+                <img src={launchUrl} alt="" width={18} height={18} className="launch-icon-img" />
               )}
             </span>
-            <span className="launch-browser-label">{launching ? 'Launching…' : 'Launch'}</span>
           </button>
         </div>
       )}

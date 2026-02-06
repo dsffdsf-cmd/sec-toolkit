@@ -4,7 +4,7 @@ configurePuppeteerEnv();
 import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
-import { getPreloadPath, getHtmlPath } from './app-paths';
+import { getPreloadPath, getHtmlPath } from './paths';
 import { ProxyServer, HttpRequest } from './proxy-server';
 import { CertificateManager } from './certificate-manager';
 import { SessionManager } from './session-manager';
@@ -45,10 +45,22 @@ let mainWindow: BrowserWindow | null = null;
 let proxyServer: ProxyServer | null = null;
 const sessionManager = new SessionManager();
 
-// WSL/Linux can have unstable GPU acceleration; disable to stop GPU crash spam.
+// WSL/Linux: disable GPU to avoid crashes; allow root (e.g. Docker/WSL) without sandbox
 if (process.platform === 'linux') {
   app.disableHardwareAcceleration();
+  if (typeof process.getuid === 'function' && process.getuid() === 0) {
+    app.commandLine.appendSwitch('no-sandbox');
+  }
 }
+
+// Prevent unhandled rejections from crashing the app (e.g. Puppeteer launch failures)
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Main] Unhandled rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[Main] Uncaught exception:', err?.message || err);
+});
 
 function ensureProxyServer(): ProxyServer {
   if (!proxyServer) {

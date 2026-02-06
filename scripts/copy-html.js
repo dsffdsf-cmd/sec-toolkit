@@ -18,3 +18,15 @@ if (fs.existsSync(srcHtml)) {
   console.error('Source HTML file not found:', srcHtml);
 }
 
+// Copy logo and launch SVGs for favicon and assets
+const assetsDir = path.join(__dirname, '../src/renderer/assets');
+const assets = ['logo.svg', 'launch.svg'];
+assets.forEach((name) => {
+  const src = path.join(assetsDir, name);
+  const dest = path.join(distRendererDir, name);
+  if (fs.existsSync(src)) {
+    fs.copyFileSync(src, dest);
+    console.log('Copied:', name);
+  }
+});
+

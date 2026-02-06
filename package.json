@@ -6,13 +6,13 @@
   "main": "dist/main/main.js",
   "author": "",
   "scripts": {
-    "prebuild": "node scripts/copy-html.js",
+    "prebuild": "node scripts/generate-icons.js && node scripts/copy-html.js",
     "validate:rules": "node scripts/validate-rules.js",
     "build": "npm run validate:rules && tsc && node ./node_modules/webpack/bin/webpack.js",
     "build:main": "tsc",
     "build:renderer": "node ./node_modules/webpack/bin/webpack.js",
     "start": "npm run build && npx electron .",
-    "dev": "concurrently \"npm run build:main -- --watch\" \"npm run build:renderer -- --watch\" \"wait-on dist/main/main.js && npx electron .\"",
+    "dev": "concurrently \"npm run build:main -- --watch\" \"npm run build:renderer -- --watch\" \"wait-on dist/main/main.js && node scripts/electron-dev.js\"",
     "lint": "eslint src --ext .ts,.tsx",
     "semgrep:validate": "semgrep --validate --config rules/javascript-security.yml",
     "semgrep:scan": "semgrep --config rules/javascript-security.yml",
@@ -22,7 +22,7 @@
     "dist:linux": "npm run build && electron-builder --linux",
     "dist:mac": "npm run build && electron-builder --mac",
     "dist:all": "npm run build && electron-builder --win --linux",
-    "browser:install": "npx puppeteer browsers install chrome"
+    "browser:install": "node scripts/install-browser.js"
   },
   "license": "MIT",
   "devDependencies": {
@@ -42,7 +42,8 @@
     "ts-loader": "^9.5.1",
     "wait-on": "^7.2.0",
     "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "sharp": "^0.33.0"
   },
   "dependencies": {
     "@httptoolkit/httpolyglot": "^1.0.0",
@@ -105,7 +106,7 @@
           ]
         }
       ],
-      "icon": "build/icon.ico",
+      "icon": "build/icon.png",
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "nsis": {
@@ -159,7 +160,8 @@
       "category": "public.app-category.developer-tools",
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
       "hardenedRuntime": true,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "icon": "build/icon.png"
     },
     "appImage": {
       "artifactName": "${productName}-${version}.${ext}"

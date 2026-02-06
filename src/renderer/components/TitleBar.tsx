@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './TitleBar.css';
+import logoUrl from '../assets/logo.svg';
 
 export const TitleBar: React.FC = () => {
   const [maximized, setMaximized] = useState(false);
@@ -25,7 +26,7 @@ export const TitleBar: React.FC = () => {
   return (
     <div className="titlebar">
       <div className="titlebar-left">
-        <div className="titlebar-dot" />
+        <img src={logoUrl} alt="" className="titlebar-logo" width={18} height={18} />
         <div className="titlebar-brand">CleanTraffic</div>
       </div>
 

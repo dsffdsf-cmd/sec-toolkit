@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { exec, execSync } from 'child_process';
-import { getUserDataPath } from './app-paths';
+import { getCertsDir } from './paths';
 import { promisify } from 'util';
 import * as forge from 'node-forge';
 import * as https from 'https';
@@ -41,7 +41,7 @@ export class CertificateManager {
   private caKey: forge.pki.PrivateKey | null = null;
 
   constructor() {
-    this.certDir = path.join(getUserDataPath(), 'certs');
+    this.certDir = getCertsDir();
     this.certPath = path.join(this.certDir, 'ca.crt');
     this.keyPath = path.join(this.certDir, 'ca.key');
 
