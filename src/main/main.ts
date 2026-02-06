@@ -4,6 +4,7 @@ configurePuppeteerEnv();
 import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import { getPreloadPath, getHtmlPath } from './app-paths';
 import { ProxyServer, HttpRequest } from './proxy-server';
 import { CertificateManager } from './certificate-manager';
 import { SessionManager } from './session-manager';
@@ -101,7 +102,7 @@ function createWindow(): void {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, '../preload/preload.js'),
+      preload: getPreloadPath(),
       devTools: false, // Disable DevTools by default
     },
     backgroundColor: '#1e1e1e',
@@ -116,26 +117,16 @@ function createWindow(): void {
   Menu.setApplicationMenu(null);
   mainWindow.setMenuBarVisibility(false);
 
-  // Load the React app
-  const htmlPath = path.join(__dirname, '../renderer/index.html');
-  const normalizedPath = path.normalize(htmlPath);
-  
-  // Avoid noisy logs in terminal
-  
-  // Check if file exists, if not try alternative path
-  if (fs.existsSync(normalizedPath)) {
-    mainWindow.loadFile(normalizedPath);
+  const htmlPath = getHtmlPath();
+  if (fs.existsSync(htmlPath)) {
+    mainWindow.loadFile(htmlPath);
   } else {
-    // Try absolute path resolution
-    const absolutePath = path.resolve(__dirname, '../renderer/index.html');
-    // no noisy logs
-    if (fs.existsSync(absolutePath)) {
-      mainWindow.loadFile(absolutePath);
+    const fallback = path.resolve(__dirname, '..', 'renderer', 'index.html');
+    if (fs.existsSync(fallback)) {
+      mainWindow.loadFile(fallback);
     } else {
-      console.error('HTML file not found at:', normalizedPath);
-      console.error('Also tried:', absolutePath);
-      // Create a simple error page
-      mainWindow.loadURL('data:text/html,<h1>Error: HTML file not found</h1><p>Please run: npm run build</p>');
+      console.error('[Main] HTML not found:', htmlPath);
+      mainWindow.loadURL('data:text/html,<h1>Error: HTML file not found</h1><p>Run: npm run build</p>');
     }
   }
   
@@ -320,7 +311,12 @@ ipcMain.handle('request:send-to-scanner', async (event, requestData, options?: {
 
 ipcMain.handle('prettify:code', async (event, code: string, language: string) => {
   try {
-    const prettier = require('prettier');
+    let prettier: typeof import('prettier');
+    try {
+      prettier = require('prettier');
+    } catch {
+      return { success: false, error: 'Prettier not available', formatted: code };
+    }
     let parser = 'babel';
     
     // Map language to prettier parser

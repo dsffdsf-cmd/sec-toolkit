@@ -798,19 +798,24 @@ class GitHubScanner {
       
       const depthArg = options.scanDepth === 'full' ? '' : '--depth 1';
       
-      const cmd = `git clone ${depthArg} ${branchArg} "${gitUrl}" "${cloneDir}"`;
-      
+      const cloneDirNorm = path.normalize(cloneDir);
+      const cmd = `git clone ${depthArg} ${branchArg} "${gitUrl}" "${cloneDirNorm}"`;
+
       if (!options.githubToken?.trim()) {
         console.log('[GitHub Scanner] Cloning:', baseUrl);
       } else {
         console.log('[GitHub Scanner] Cloning (with token):', `${parsed.owner}/${parsed.repo}`);
       }
-      
-      execSync(cmd, { 
+
+      const execOpts: { stdio: 'pipe'; timeout: number; maxBuffer: number; shell?: string } = {
         stdio: 'pipe',
-        timeout: 180000, // 3 minute timeout
-        maxBuffer: 50 * 1024 * 1024, // 50MB buffer
-      });
+        timeout: 180000,
+        maxBuffer: 50 * 1024 * 1024,
+      };
+      if (process.platform === 'win32') {
+        execOpts.shell = process.env.COMSPEC || 'cmd.exe';
+      }
+      execSync(cmd, execOpts);
 
       onProgress?.({
         stage: 'cloning',

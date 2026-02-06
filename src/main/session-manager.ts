@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { HttpRequest } from './proxy-server';
+import { getUserDataPath } from './app-paths';
 
 interface HAREntry {
   startedDateTime?: string;
@@ -19,18 +20,16 @@ export interface SessionData {
 }
 
 export class SessionManager {
-  private sessionsDir: string;
+  private _sessionsDir: string | null = null;
 
-  constructor() {
-    // Store sessions in user's app data directory
-    const appDataPath = process.env.APPDATA || 
-                       (process.platform === 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + '/.config');
-    this.sessionsDir = path.join(appDataPath, 'CleanTraffic', 'sessions');
-    
-    // Create sessions directory if it doesn't exist
-    if (!fs.existsSync(this.sessionsDir)) {
-      fs.mkdirSync(this.sessionsDir, { recursive: true });
+  private get sessionsDir(): string {
+    if (!this._sessionsDir) {
+      this._sessionsDir = path.join(getUserDataPath(), 'sessions');
+      if (!fs.existsSync(this._sessionsDir)) {
+        fs.mkdirSync(this._sessionsDir, { recursive: true });
+      }
     }
+    return this._sessionsDir;
   }
 
   /**

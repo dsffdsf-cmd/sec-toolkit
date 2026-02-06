@@ -1,9 +1,9 @@
 /**
  * Runs Scanner in a worker thread. Main stays responsive; phases are forwarded via callback.
  */
-import * as path from 'path';
 import { Worker } from 'worker_threads';
 import { ScanResult } from './scanner';
+import { getScannerWorkerPath } from './app-paths';
 
 export function runScanInWorker(
   code: string,
@@ -12,7 +12,7 @@ export function runScanInWorker(
   customPatterns?: string[]
 ): Promise<ScanResult[]> {
   return new Promise((resolve, reject) => {
-    const workerPath = path.join(__dirname, 'scanner-worker.js');
+    const workerPath = getScannerWorkerPath();
     const worker = new Worker(workerPath, { workerData: {} });
 
     worker.on('message', (msg: { type: string; phase?: number; label?: string; results?: ScanResult[]; error?: string }) => {

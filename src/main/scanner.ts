@@ -9,10 +9,22 @@ import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { z } from 'zod';
+import { getRulesDir, shellEscapePath } from './app-paths';
 
-// Prettier types sometimes fail resolution in WSL/mono setups; require keeps build stable.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const prettier = require('prettier');
+/** Lazy-loaded Prettier - avoids MODULE_NOT_FOUND on macOS/packaged when paths differ */
+let prettierModule: typeof import('prettier') | null = null;
+let prettierTried = false;
+function getPrettier(): typeof import('prettier') | null {
+  if (prettierTried) return prettierModule;
+  prettierTried = true;
+  try {
+    prettierModule = require('prettier');
+    return prettierModule;
+  } catch {
+    prettierModule = null;
+    return null;
+  }
+}
 
 const execAsync = promisify(exec);
 
@@ -696,7 +708,7 @@ export class Scanner {
   // ═══════════════════════════════════════════════════════════════════════════════════════════════
 
   constructor() {
-    this.rulesDir = path.join(__dirname, '../../rules');
+    this.rulesDir = getRulesDir();
     this.semgrepRules = this.loadSemgrepRules();
   }
 
@@ -2749,8 +2761,8 @@ export class Scanner {
         throw new Error(`Semgrep config not found: ${rulesFile}`);
       }
 
-      const normalizedRulesFile = path.resolve(rulesFile);
-      const normalizedFilePath = path.resolve(filePath);
+      const normalizedRulesFile = shellEscapePath(rulesFile);
+      const normalizedFilePath = shellEscapePath(filePath);
       const lineOffsets = this.buildLineOffsets(code);
       
       const mb = code.length / (1024 * 1024);
@@ -2775,14 +2787,14 @@ export class Scanner {
       let baseFlags = `--json --timeout ${timeout} --quiet --metrics=off --disable-version-check --dataflow-traces`;
 
       try {
-        const cmd = `${semgrepCmd} --config "${normalizedRulesFile}" "${normalizedFilePath}" ${baseFlags}`;
+        const cmd = `${semgrepCmd} --config ${normalizedRulesFile} ${normalizedFilePath} ${baseFlags}`;
         const out = await run(cmd);
         stdout = out.stdout ?? '';
       } catch (e: any) {
         const stderr = String(e?.stderr || e?.message || e || '');
         if (/unknown option|unrecognized arguments|no such option|dataflow/i.test(stderr)) {
           baseFlags = `--json --timeout ${timeout} --quiet --metrics=off --disable-version-check`;
-          const cmd = `${semgrepCmd} --config "${normalizedRulesFile}" "${normalizedFilePath}" ${baseFlags}`;
+          const cmd = `${semgrepCmd} --config ${normalizedRulesFile} ${normalizedFilePath} ${baseFlags}`;
           const out = await run(cmd);
           stdout = out.stdout ?? '';
         } else if (typeof e?.stdout === 'string' && e.stdout.trim()) {
@@ -3582,6 +3594,11 @@ export class Scanner {
   }
 
   private async prettifyWithTimeout(input: string, timeoutMs: number): Promise<string> {
+    const prettier = getPrettier();
+    if (!prettier) {
+      throw new Error('Prettier not available');
+    }
+
     const run = prettier.format(input, {
       parser: 'babel',
       printWidth: 120,

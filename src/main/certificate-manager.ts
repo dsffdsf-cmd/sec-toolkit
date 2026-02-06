@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { exec, execSync } from 'child_process';
+import { getUserDataPath } from './app-paths';
 import { promisify } from 'util';
 import * as forge from 'node-forge';
 import * as https from 'https';
@@ -39,13 +41,37 @@ export class CertificateManager {
   private caKey: forge.pki.PrivateKey | null = null;
 
   constructor() {
-    this.certDir = path.join(process.env.APPDATA || process.env.HOME || '', '.sec-toolkit');
+    this.certDir = path.join(getUserDataPath(), 'certs');
     this.certPath = path.join(this.certDir, 'ca.crt');
     this.keyPath = path.join(this.certDir, 'ca.key');
-    
-    // Ensure directory exists
+
     if (!fs.existsSync(this.certDir)) {
       fs.mkdirSync(this.certDir, { recursive: true });
+    }
+    if (!fs.existsSync(this.certPath) || !fs.existsSync(this.keyPath)) {
+      this.migrateLegacyCerts();
+    }
+  }
+
+  private migrateLegacyCerts(): void {
+    const home = os.homedir();
+    const legacyPaths = [
+      process.platform === 'win32' ? path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), '.sec-toolkit') : null,
+      path.join(home, '.sec-toolkit'),
+    ].filter(Boolean) as string[];
+    for (const legacy of legacyPaths) {
+      const oldCrt = path.join(legacy, 'ca.crt');
+      const oldKey = path.join(legacy, 'ca.key');
+      if (fs.existsSync(oldCrt) && fs.existsSync(oldKey)) {
+        try {
+          fs.copyFileSync(oldCrt, this.certPath);
+          fs.copyFileSync(oldKey, this.keyPath);
+          console.log('[CertManager] Migrated certs from legacy path');
+          break;
+        } catch (e) {
+          console.warn('[CertManager] Legacy cert migration failed:', (e as Error).message);
+        }
+      }
     }
   }
 

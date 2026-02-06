@@ -124,6 +124,20 @@ CleanTraffic checks these paths for fallback.
 
 First launch downloads Chromium (~150MB). Later launches use the cached binary.
 
+## Scanner & Path Compatibility
+
+The Scanner (and Intruder) use cross-platform path resolution:
+
+- **Rules directory**: Tries `process.resourcesPath/rules` (packaged) then `__dirname/../../rules` (dev)
+- **Worker path**: Resolved via `app-paths.ts` for dev and packaged apps
+- **Prettier**: Lazy-loaded; if unavailable (e.g. MODULE_NOT_FOUND on macOS), the scanner falls back to a simple formatter for minified code
+- **Semgrep**: Paths are shell-escaped for macOS/Windows/Linux
+
+If you see path-related errors when clicking Scan, ensure:
+1. The `rules/` folder exists (bundled in the app)
+2. Prettier is in `node_modules` (or the fallback formatter will be used)
+3. On macOS: paths with spaces are properly escaped
+
 ## References
 
 - [Puppeteer Configuration](https://pptr.dev/guides/configuration)
