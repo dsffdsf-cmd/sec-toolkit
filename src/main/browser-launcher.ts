@@ -5,7 +5,9 @@
  */
 
 import * as fs from 'fs';
-import { getPuppeteerCacheDir } from './paths';
+import * as path from 'path';
+import * as os from 'os';
+import { getPuppeteerCacheDir, getChromiumUserDataDir } from './paths';
 
 export { getPuppeteerCacheDir };
 
@@ -16,8 +18,27 @@ export function configurePuppeteerEnv(): void {
   process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = '0';
   try {
     fs.mkdirSync(cacheDir, { recursive: true });
+    migrateLegacyBrowserCache(cacheDir);
   } catch {
     // ignore
+  }
+}
+
+/** One-time migration from old ~/.cleantraffic/browser to app data root */
+function migrateLegacyBrowserCache(newCacheDir: string): void {
+  const home = os.homedir();
+  if (!home) return;
+  const legacyDir = path.join(home, '.cleantraffic', 'browser');
+  if (legacyDir === newCacheDir) return;
+  try {
+    const hasContent = fs.existsSync(legacyDir) && fs.readdirSync(legacyDir).length > 0;
+    const newEmpty = !fs.existsSync(newCacheDir) || fs.readdirSync(newCacheDir).length === 0;
+    if (hasContent && newEmpty) {
+      fs.cpSync(legacyDir, newCacheDir, { recursive: true });
+      console.log('[Browser] Migrated Chromium cache from legacy path');
+    }
+  } catch {
+    // ignore – migration is best-effort
   }
 }
 
@@ -60,6 +81,13 @@ export async function launchBrowser(options: LaunchBrowserOptions = {}): Promise
 
   process.env.PUPPETEER_CACHE_DIR = getPuppeteerCacheDir();
 
+  const userDataDir = getChromiumUserDataDir();
+  try {
+    fs.mkdirSync(userDataDir, { recursive: true });
+  } catch {
+    // ignore
+  }
+
   const puppeteer = await import('puppeteer');
   const browser = await puppeteer.default.launch({
     headless,
@@ -67,6 +95,7 @@ export async function launchBrowser(options: LaunchBrowserOptions = {}): Promise
     args: getPlatformLaunchArgs(),
     ignoreHTTPSErrors: true,
     timeout: 60000,
+    userDataDir, // Short path – avoids macOS socket path too long / hangup
   });
   return browser;
 }

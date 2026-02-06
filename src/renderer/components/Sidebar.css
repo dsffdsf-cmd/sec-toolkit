@@ -116,7 +116,7 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Launch Browser – small clean square
+   Launch browser button
    ───────────────────────────────────────────────────────────────────────────── */
 
 .launch-browser-section {
@@ -135,26 +135,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
   padding: 0;
   background: linear-gradient(180deg, hsl(220, 14%, 18%) 0%, hsl(220, 12%, 14%) 100%);
   border: 1px solid hsl(220, 12%, 24%);
   border-radius: 6px;
   color: hsl(0, 0%, 94%);
-  font-weight: 600;
-  font-size: 9px;
   cursor: pointer;
   transition:
     background 0.15s var(--sidebar-ease),
     border-color 0.15s var(--sidebar-ease),
     transform 0.1s var(--sidebar-ease),
-    box-shadow 0.2s ease,
-    width var(--sidebar-duration) var(--sidebar-ease),
-    padding var(--sidebar-duration) var(--sidebar-ease);
+    box-shadow 0.2s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
-
 
 .launch-browser-btn:hover:not(:disabled) {
   background: linear-gradient(180deg, hsl(220, 14%, 22%) 0%, hsl(220, 12%, 18%) 100%);

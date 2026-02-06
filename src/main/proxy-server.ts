@@ -1,5 +1,5 @@
 import { Browser, Page, CDPSession } from 'puppeteer';
-import { getPuppeteerCacheDir, launchBrowser } from './browser-launcher';
+import { launchBrowser } from './browser-launcher';
 import { RequestStore } from '../shared/request-store';
 import {
   validateUrl,
@@ -639,9 +639,6 @@ export class ProxyServer {
 
   async start(): Promise<number> {
     console.log('[Proxy] Launching browser for traffic interception...');
-
-    // Use app userData for Chromium cache (app is ready when user clicks Launch)
-    process.env.PUPPETEER_CACHE_DIR = getPuppeteerCacheDir();
 
     this.browser = await launchBrowser({
       headless: false,

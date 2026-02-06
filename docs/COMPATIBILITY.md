@@ -14,26 +14,30 @@ CleanTraffic is designed to run on **Windows**, **macOS**, and **Linux**. This d
 
 All paths use Node.js `path` module and `path.join()` for correct separators. No hardcoded `/` or `\`.
 
-### App Paths (`app-paths.ts`)
+### App Paths (`paths.ts`)
 
 | Function | Purpose |
 |----------|---------|
-| `getUserDataPath()` | App data dir (Electron `userData` when available) |
-| `getRulesDir()` | Semgrep rules (packaged: `resourcesPath/rules`, dev: `__dirname/../../rules`) |
-| `getScannerWorkerPath()` | Worker script for scanner |
-| `getPreloadPath()` | Preload script for renderer |
+| `getUserDataPath()` | App data root (Electron `userData`) |
+| `getPuppeteerCacheDir()` | Chromium binary cache |
+| `getChromiumUserDataDir()` | Chromium profile (short path for macOS socket) |
+| `getCertsDir()` | CA certs |
+| `getSessionsDir()` | Sessions |
+| `getRulesDir()` | Semgrep rules |
+| `getScannerWorkerPath()` | Worker script |
+| `getPreloadPath()` | Preload script |
 | `getHtmlPath()` | Renderer `index.html` |
-| `shellEscapePath()` | Escape paths for shell commands (exec) |
+| `shellEscapePath()` | Escape paths for shell commands |
 
-### User Data Locations
+### User Data – unified structure
 
-When running in Electron (packaged or dev):
+One root, same layout everywhere (dev, prod, packaged):
 
-- **Windows**: `%APPDATA%\CleanTraffic` or `%LOCALAPPDATA%\CleanTraffic`
+- **Windows**: `%APPDATA%\CleanTraffic`
 - **macOS**: `~/Library/Application Support/CleanTraffic`
-- **Linux**: `~/.config/CleanTraffic` or `$XDG_CONFIG_HOME/CleanTraffic`
+- **Linux**: `~/.config/CleanTraffic`
 
-Sessions, certs, and integration config use subdirs of this path.
+Subdirs: `browser/`, `browser-profile/`, `certs/`, `sessions/`
 
 ### Certificate Migration
 
@@ -56,7 +60,7 @@ Legacy certs from `~/.sec-toolkit` (or `%APPDATA%\.sec-toolkit` on Windows) are 
 
 - **Prettier**: Lazy-loaded in scanner; fallback formatter if unavailable (avoids `MODULE_NOT_FOUND` on packaged macOS)
 - **Electron**: `app.getPath()` used only when `app.isReady()`
-- **Workers**: Paths resolved via `app-paths` for dev and packaged
+- **Workers**: Paths resolved via `paths.ts` for dev and packaged
 
 ## Platform-Specific Behavior
 

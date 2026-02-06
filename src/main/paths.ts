@@ -1,7 +1,7 @@
 /**
  * CleanTraffic – single source of truth for all paths.
- * One base dir, same structure on Windows, macOS, Linux.
- * No platform hacks. No fallbacks. Clean.
+ * One root, same structure on Windows, macOS, Linux.
+ * Dev, prod, packaged – same layout everywhere.
  */
 
 import * as path from 'path';
@@ -9,36 +9,49 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 const MAIN_DIR = path.resolve(__dirname);
+const APP_NAME = 'CleanTraffic';
 
-/** Base dir for app data. Electron userData when ready, else ~/.cleantraffic */
-function getBaseDir(): string {
+/** App data root – same as Electron userData. One root for everything. */
+function getAppDataRoot(): string {
   try {
     const { app } = require('electron');
     if (app?.isReady?.()) {
       return app.getPath('userData');
     }
   } catch {
-    // Not Electron
+    // Not Electron (e.g. tests, scripts)
   }
   const home = os.homedir();
-  return home ? path.join(home, '.cleantraffic') : path.join(process.cwd(), '.cleantraffic');
+  if (!home) return path.join(process.cwd(), '.cleantraffic');
+  if (process.platform === 'darwin') {
+    return path.join(home, 'Library', 'Application Support', APP_NAME);
+  }
+  if (process.platform === 'win32') {
+    const appData = process.env.APPDATA || path.join(home, 'AppData', 'Roaming');
+    return path.join(appData, APP_NAME);
+  }
+  const config = process.env.XDG_CONFIG_HOME || path.join(home, '.config');
+  return path.join(config, APP_NAME);
 }
 
-/** Puppeteer Chromium cache. Fixed: ~/.cleantraffic/browser. Same path for install and runtime. */
+/** Chromium binary cache – Puppeteer downloads here. Same path for install and runtime. */
 export function getPuppeteerCacheDir(): string {
-  const home = os.homedir();
-  const base = home ? path.join(home, '.cleantraffic') : path.join(process.cwd(), '.cleantraffic');
-  return path.join(base, 'browser');
+  return path.join(getAppDataRoot(), 'browser');
 }
 
-/** Certs */
+/** Chromium userDataDir – short path to avoid macOS socket hangup. */
+export function getChromiumUserDataDir(): string {
+  return path.join(getAppDataRoot(), 'browser-profile');
+}
+
+/** CA certs */
 export function getCertsDir(): string {
-  return path.join(getBaseDir(), 'certs');
+  return path.join(getAppDataRoot(), 'certs');
 }
 
 /** Sessions */
 export function getSessionsDir(): string {
-  return path.join(getBaseDir(), 'sessions');
+  return path.join(getAppDataRoot(), 'sessions');
 }
 
 /** Rules – from app bundle or project root */
@@ -69,7 +82,7 @@ export function getHtmlPath(): string {
 
 /** User data (for integration-store compatibility) */
 export function getUserDataPath(): string {
-  return getBaseDir();
+  return getAppDataRoot();
 }
 
 /** Resolve path for exec */
